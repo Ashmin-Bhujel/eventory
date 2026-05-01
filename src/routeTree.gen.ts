@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as ApiWebhooksClerkRouteImport } from './routes/api/webhooks/clerk'
 import { Route as AuthSignupSplatRouteImport } from './routes/_auth/signup.$'
 import { Route as AuthLoginSplatRouteImport } from './routes/_auth/login.$'
 
@@ -39,6 +40,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiWebhooksClerkRoute = ApiWebhooksClerkRouteImport.update({
+  id: '/api/webhooks/clerk',
+  path: '/api/webhooks/clerk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthSignupSplatRoute = AuthSignupSplatRouteImport.update({
   id: '/signup/$',
   path: '/signup/$',
@@ -55,12 +61,14 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/login/$': typeof AuthLoginSplatRoute
   '/signup/$': typeof AuthSignupSplatRoute
+  '/api/webhooks/clerk': typeof ApiWebhooksClerkRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/login/$': typeof AuthLoginSplatRoute
   '/signup/$': typeof AuthSignupSplatRoute
+  '/api/webhooks/clerk': typeof ApiWebhooksClerkRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,12 +79,13 @@ export interface FileRoutesById {
   '/_public/': typeof PublicIndexRoute
   '/_auth/login/$': typeof AuthLoginSplatRoute
   '/_auth/signup/$': typeof AuthSignupSplatRoute
+  '/api/webhooks/clerk': typeof ApiWebhooksClerkRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile' | '/login/$' | '/signup/$'
+  fullPaths: '/' | '/profile' | '/login/$' | '/signup/$' | '/api/webhooks/clerk'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile' | '/login/$' | '/signup/$'
+  to: '/' | '/profile' | '/login/$' | '/signup/$' | '/api/webhooks/clerk'
   id:
     | '__root__'
     | '/_auth'
@@ -86,12 +95,14 @@ export interface FileRouteTypes {
     | '/_public/'
     | '/_auth/login/$'
     | '/_auth/signup/$'
+    | '/api/webhooks/clerk'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
+  ApiWebhooksClerkRoute: typeof ApiWebhooksClerkRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -130,6 +141,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/webhooks/clerk': {
+      id: '/api/webhooks/clerk'
+      path: '/api/webhooks/clerk'
+      fullPath: '/api/webhooks/clerk'
+      preLoaderRoute: typeof ApiWebhooksClerkRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_auth/signup/$': {
       id: '/_auth/signup/$'
@@ -189,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRouteRoute: AuthRouteRouteWithChildren,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
+  ApiWebhooksClerkRoute: ApiWebhooksClerkRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
