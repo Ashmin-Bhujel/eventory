@@ -1,10 +1,34 @@
 import { ThemeProvider } from "#/components/theme-provider.tsx";
+import { authStateFn } from "#/server/functions/auth.ts";
+import { ClerkProvider } from "@clerk/tanstack-react-start";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import appCss from "../styles.css?url";
 
-export const Route = createRootRoute({
+type RouterContext = {
+  isAuthenticated: boolean;
+  userId: string | null;
+};
+
+export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async () => {
+    try {
+      const { isAuthenticated, userId } = await authStateFn();
+
+      return {
+        isAuthenticated,
+        userId,
+      };
+    } catch (error) {
+      console.error("Error fetching auth state:", error);
+
+      return {
+        isAuthenticated: false,
+        userId: null,
+      };
+    }
+  },
   head: () => ({
     meta: [
       {
@@ -42,21 +66,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <ThemeProvider defaultTheme="system" storageKey="theme">
-          {children}
-          <TanStackDevtools
-            config={{
-              position: "bottom-right",
-              hideUntilHover: true,
-              defaultOpen: false,
-              openHotkey: ["Control", "Shift", "D"],
-            }}
-            plugins={[
-              {
-                name: "TanStack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
+          <ClerkProvider>
+            {children}
+            <TanStackDevtools
+              config={{
+                position: "bottom-right",
+                hideUntilHover: true,
+                defaultOpen: false,
+                openHotkey: ["Control", "Shift", "D"],
+              }}
+              plugins={[
+                {
+                  name: "TanStack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
+          </ClerkProvider>
         </ThemeProvider>
         <Scripts />
       </body>

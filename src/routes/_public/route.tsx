@@ -1,3 +1,4 @@
+import Header from "#/components/shared/header.tsx";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_public")({
@@ -5,5 +6,10 @@ export const Route = createFileRoute("/_public")({
 });
 
 function RouteComponent() {
-  return <Outlet />;
+  return (
+    <main>
+      <Header />
+      <Outlet />
+    </main>
+  );
 }
