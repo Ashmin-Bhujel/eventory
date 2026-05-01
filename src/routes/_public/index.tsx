@@ -9,7 +9,7 @@ function RouteComponent() {
     <main>
       <header>
         <div className="container mx-auto px-4 py-6">
-          <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
+          <h1 className="font-heading scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
             Eventory
           </h1>
         </div>
