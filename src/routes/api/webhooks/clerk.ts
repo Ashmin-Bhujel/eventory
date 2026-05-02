@@ -1,5 +1,5 @@
 import { createUserSchema, deleteUserSchema, updateUserSchema } from "#/lib/validation/user.ts";
-import { createUserFn, deleteUserFn, updateUserFn } from "#/server/functions/auth.ts";
+import { createUserFn, deleteUserFn, updateUserFn } from "#/server/functions/user.ts";
 import { clerkClient } from "@clerk/tanstack-react-start/server";
 import { verifyWebhook } from "@clerk/tanstack-react-start/webhooks";
 import { createFileRoute } from "@tanstack/react-router";
