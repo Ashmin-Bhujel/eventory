@@ -13,10 +13,14 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicEventsRouteImport } from './routes/_public/events'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as ApiWebhooksClerkRouteImport } from './routes/api/webhooks/clerk'
+import { Route as ApiAuthImagekitRouteImport } from './routes/api/auth/imagekit'
+import { Route as AuthenticatedEventsCreateRouteImport } from './routes/_authenticated/events/create'
 import { Route as AuthSignupSplatRouteImport } from './routes/_auth/signup.$'
 import { Route as AuthLoginSplatRouteImport } from './routes/_auth/login.$'
+import { Route as AuthenticatedEventsIdUpdateRouteImport } from './routes/_authenticated/events/$id/update'
 
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
@@ -35,6 +39,11 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicEventsRoute = PublicEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -45,6 +54,17 @@ const ApiWebhooksClerkRoute = ApiWebhooksClerkRouteImport.update({
   path: '/api/webhooks/clerk',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthImagekitRoute = ApiAuthImagekitRouteImport.update({
+  id: '/api/auth/imagekit',
+  path: '/api/auth/imagekit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedEventsCreateRoute =
+  AuthenticatedEventsCreateRouteImport.update({
+    id: '/events/create',
+    path: '/events/create',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthSignupSplatRoute = AuthSignupSplatRouteImport.update({
   id: '/signup/$',
   path: '/signup/$',
@@ -55,20 +75,34 @@ const AuthLoginSplatRoute = AuthLoginSplatRouteImport.update({
   path: '/login/$',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AuthenticatedEventsIdUpdateRoute =
+  AuthenticatedEventsIdUpdateRouteImport.update({
+    id: '/events/$id/update',
+    path: '/events/$id/update',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/events': typeof PublicEventsRoute
   '/login/$': typeof AuthLoginSplatRoute
   '/signup/$': typeof AuthSignupSplatRoute
+  '/events/create': typeof AuthenticatedEventsCreateRoute
+  '/api/auth/imagekit': typeof ApiAuthImagekitRoute
   '/api/webhooks/clerk': typeof ApiWebhooksClerkRoute
+  '/events/$id/update': typeof AuthenticatedEventsIdUpdateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/events': typeof PublicEventsRoute
   '/login/$': typeof AuthLoginSplatRoute
   '/signup/$': typeof AuthSignupSplatRoute
+  '/events/create': typeof AuthenticatedEventsCreateRoute
+  '/api/auth/imagekit': typeof ApiAuthImagekitRoute
   '/api/webhooks/clerk': typeof ApiWebhooksClerkRoute
+  '/events/$id/update': typeof AuthenticatedEventsIdUpdateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,32 +110,59 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_public/events': typeof PublicEventsRoute
   '/_public/': typeof PublicIndexRoute
   '/_auth/login/$': typeof AuthLoginSplatRoute
   '/_auth/signup/$': typeof AuthSignupSplatRoute
+  '/_authenticated/events/create': typeof AuthenticatedEventsCreateRoute
+  '/api/auth/imagekit': typeof ApiAuthImagekitRoute
   '/api/webhooks/clerk': typeof ApiWebhooksClerkRoute
+  '/_authenticated/events/$id/update': typeof AuthenticatedEventsIdUpdateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile' | '/login/$' | '/signup/$' | '/api/webhooks/clerk'
+  fullPaths:
+    | '/'
+    | '/profile'
+    | '/events'
+    | '/login/$'
+    | '/signup/$'
+    | '/events/create'
+    | '/api/auth/imagekit'
+    | '/api/webhooks/clerk'
+    | '/events/$id/update'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile' | '/login/$' | '/signup/$' | '/api/webhooks/clerk'
+  to:
+    | '/'
+    | '/profile'
+    | '/events'
+    | '/login/$'
+    | '/signup/$'
+    | '/events/create'
+    | '/api/auth/imagekit'
+    | '/api/webhooks/clerk'
+    | '/events/$id/update'
   id:
     | '__root__'
     | '/_auth'
     | '/_authenticated'
     | '/_public'
     | '/_authenticated/profile'
+    | '/_public/events'
     | '/_public/'
     | '/_auth/login/$'
     | '/_auth/signup/$'
+    | '/_authenticated/events/create'
+    | '/api/auth/imagekit'
     | '/api/webhooks/clerk'
+    | '/_authenticated/events/$id/update'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
+  ApiAuthImagekitRoute: typeof ApiAuthImagekitRoute
   ApiWebhooksClerkRoute: typeof ApiWebhooksClerkRoute
 }
 
@@ -135,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/events': {
+      id: '/_public/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof PublicEventsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -149,6 +217,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksClerkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/imagekit': {
+      id: '/api/auth/imagekit'
+      path: '/api/auth/imagekit'
+      fullPath: '/api/auth/imagekit'
+      preLoaderRoute: typeof ApiAuthImagekitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/events/create': {
+      id: '/_authenticated/events/create'
+      path: '/events/create'
+      fullPath: '/events/create'
+      preLoaderRoute: typeof AuthenticatedEventsCreateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_auth/signup/$': {
       id: '/_auth/signup/$'
       path: '/signup/$'
@@ -162,6 +244,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/login/$'
       preLoaderRoute: typeof AuthLoginSplatRouteImport
       parentRoute: typeof AuthRouteRoute
+    }
+    '/_authenticated/events/$id/update': {
+      id: '/_authenticated/events/$id/update'
+      path: '/events/$id/update'
+      fullPath: '/events/$id/update'
+      preLoaderRoute: typeof AuthenticatedEventsIdUpdateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
@@ -182,20 +271,26 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedEventsCreateRoute: typeof AuthenticatedEventsCreateRoute
+  AuthenticatedEventsIdUpdateRoute: typeof AuthenticatedEventsIdUpdateRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedEventsCreateRoute: AuthenticatedEventsCreateRoute,
+  AuthenticatedEventsIdUpdateRoute: AuthenticatedEventsIdUpdateRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface PublicRouteRouteChildren {
+  PublicEventsRoute: typeof PublicEventsRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicEventsRoute: PublicEventsRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 
@@ -207,6 +302,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRouteRoute: AuthRouteRouteWithChildren,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
+  ApiAuthImagekitRoute: ApiAuthImagekitRoute,
   ApiWebhooksClerkRoute: ApiWebhooksClerkRoute,
 }
 export const routeTree = rootRouteImport

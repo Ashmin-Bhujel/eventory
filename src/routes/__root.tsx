@@ -1,6 +1,10 @@
+import NotFound from "#/components/shared/not-found";
 import { ThemeProvider } from "#/components/theme-provider.tsx";
+import { Toaster } from "#/components/ui/sonner";
+import { TooltipProvider } from "#/components/ui/tooltip";
 import { authStateFn } from "#/server/functions/auth.ts";
 import { ClerkProvider } from "@clerk/tanstack-react-start";
+import { ImageKitProvider } from "@imagekit/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -24,7 +28,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         userId,
       };
     } catch (error) {
-      console.error("Error fetching auth state:", error);
+      if (error instanceof Error) {
+        console.error("Error fetching auth state:", error.message);
+      } else {
+        console.error("Unknown error fetching auth state:", error);
+      }
 
       return {
         isAuthenticated: false,
@@ -58,7 +66,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
-  notFoundComponent: () => <div>404 - Not Found</div>,
+  notFoundComponent: NotFound,
 });
 
 const queryClient = new QueryClient();
@@ -70,35 +78,40 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider defaultTheme="system" storageKey="theme">
-            <ClerkProvider>
-              {children}
-              <TanStackDevtools
-                config={{
-                  position: "bottom-right",
-                  hideUntilHover: true,
-                  defaultOpen: false,
-                  openHotkey: ["Control", "Shift", "D"],
-                }}
-                plugins={[
-                  {
-                    name: "TanStack Form",
-                    render: <FormDevtoolsPanel />,
-                  },
-                  {
-                    name: "TanStack Query",
-                    render: <ReactQueryDevtoolsPanel />,
-                  },
-                  {
-                    name: "TanStack Router",
-                    render: <TanStackRouterDevtoolsPanel />,
-                  },
-                ]}
-              />
-            </ClerkProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
+        <ClerkProvider>
+          <QueryClientProvider client={queryClient}>
+            <ImageKitProvider urlEndpoint={import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}>
+              <ThemeProvider defaultTheme="system" storageKey="theme">
+                <TooltipProvider>
+                  {children}
+                  <Toaster />
+                  <TanStackDevtools
+                    config={{
+                      position: "bottom-right",
+                      hideUntilHover: true,
+                      defaultOpen: false,
+                      openHotkey: ["Control", "Shift", "D"],
+                    }}
+                    plugins={[
+                      {
+                        name: "TanStack Form",
+                        render: <FormDevtoolsPanel />,
+                      },
+                      {
+                        name: "TanStack Query",
+                        render: <ReactQueryDevtoolsPanel />,
+                      },
+                      {
+                        name: "TanStack Router",
+                        render: <TanStackRouterDevtoolsPanel />,
+                      },
+                    ]}
+                  />
+                </TooltipProvider>
+              </ThemeProvider>
+            </ImageKitProvider>
+          </QueryClientProvider>
+        </ClerkProvider>
         <Scripts />
       </body>
     </html>

@@ -11,6 +11,7 @@ export function getRouter() {
       isAuthenticated: undefined!,
       userId: undefined!,
     },
+    notFoundMode: "root",
   });
 
   return router;

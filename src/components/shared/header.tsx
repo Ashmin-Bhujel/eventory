@@ -2,6 +2,7 @@ import { Show, UserButton } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
 import { ModeToggle } from "../mode-toggle";
 import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
 
 export default function Header() {
   return (
@@ -14,7 +15,7 @@ export default function Header() {
             </span>
           </Link>
 
-          <nav className="flex items-center gap-2">
+          <nav className="hidden items-center gap-4 md:flex">
             <Link to="/">
               {({ isActive }) => (
                 <Button variant={isActive ? "secondary" : "ghost"} asChild>
@@ -23,11 +24,10 @@ export default function Header() {
               )}
             </Link>
 
-            {/* TODO: Implement Events link, dummy for now */}
-            <Link to="/">
-              {() => (
-                <Button variant={"ghost"} asChild>
-                  <span>Events</span>
+            <Link to="/events/create">
+              {({ isActive }) => (
+                <Button variant={isActive ? "secondary" : "ghost"} asChild>
+                  <span>Create Events</span>
                 </Button>
               )}
             </Link>
@@ -41,18 +41,16 @@ export default function Header() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
             <Show when={"signed-in"}>
-              <UserButton showName />
+              <UserButton fallback={<Skeleton className="size-7" />} />
             </Show>
 
             <Show when={"signed-out"}>
               <Link to="/login/$">
-                {({ isActive }) => (
-                  <Button variant={isActive ? "secondary" : "outline"} asChild>
-                    <span>Login</span>
-                  </Button>
-                )}
+                <Button variant={"outline"} asChild>
+                  <span>Login</span>
+                </Button>
               </Link>
             </Show>
 

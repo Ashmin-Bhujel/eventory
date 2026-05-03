@@ -10,10 +10,7 @@ import { Event } from "#/lib/database/models/event.model.ts";
 import { Order } from "#/lib/database/models/order.model.ts";
 import { User } from "#/lib/database/models/user.model.ts";
 import { createUserSchema, deleteUserSchema, updateUserSchema } from "#/lib/validation/user.ts";
-import { useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-
-const router = useRouter();
 
 export const createUserFn = createServerFn({
   method: "POST",
@@ -29,6 +26,8 @@ export const createUserFn = createServerFn({
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error creating user:", error.message);
+      } else {
+        console.error("Unknown error creating user:", error);
       }
 
       return null;
@@ -58,6 +57,8 @@ export const updateUserFn = createServerFn({
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error updating user:", error.message);
+      } else {
+        console.error("Unknown error updating user:", error);
       }
 
       return null;
@@ -83,7 +84,7 @@ export const deleteUserFn = createServerFn({
         Event.updateMany(
           { organizer: userToDelete._id },
           {
-            $pull: { organizer: userToDelete._id },
+            $unset: { organizer: 1 },
           },
         ),
 
@@ -100,12 +101,12 @@ export const deleteUserFn = createServerFn({
         return null;
       }
 
-      router.invalidate();
-
       return JSON.parse(JSON.stringify(deletedUser)) as UserType;
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error deleting user:", error.message);
+      } else {
+        console.error("Unknown error deleting user:", error);
       }
 
       return null;

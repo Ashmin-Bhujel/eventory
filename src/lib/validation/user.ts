@@ -7,7 +7,7 @@ export const userSchema = z.object({
   username: z.string(),
   firstName: z.string(),
   lastName: z.string(),
-  avatarUrl: z.string().optional(),
+  avatarUrl: z.url(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -18,7 +18,7 @@ export const createUserSchema = z.object({
   username: z.string("Username is required"),
   firstName: z.string("First name is required"),
   lastName: z.string("Last name is required"),
-  avatarUrl: z.string().optional(),
+  avatarUrl: z.url("Please provide a valid avatar URL"),
 });
 
 export const updateUserSchema = z.object({
@@ -26,7 +26,7 @@ export const updateUserSchema = z.object({
   username: z.string("Username is required").optional(),
   firstName: z.string("First name is required").optional(),
   lastName: z.string("Last name is required").optional(),
-  avatarUrl: z.string().optional(),
+  avatarUrl: z.url("Please provide a valid avatar URL").optional(),
 });
 
 export const deleteUserSchema = z.object({

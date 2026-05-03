@@ -1,16 +1,24 @@
+import EventForm from "#/components/events/event-form";
+import { useAuth } from "@clerk/tanstack-react-start";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_authenticated/profile")({
+export const Route = createFileRoute("/_authenticated/events/create")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { userId } = useAuth();
+
   return (
     <section className="container mx-auto">
       <div className="px-4 py-6">
         <h1 className="font-heading scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-          My Profile
+          Create Event
         </h1>
+
+        <div>
+          <EventForm clerkUserId={userId} type="create" />
+        </div>
       </div>
     </section>
   );
