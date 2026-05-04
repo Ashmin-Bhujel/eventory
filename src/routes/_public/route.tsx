@@ -1,4 +1,3 @@
-import Footer from "#/components/shared/footer";
 import Header from "#/components/shared/header.tsx";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 
@@ -11,7 +10,6 @@ function RouteComponent() {
     <main>
       <Header />
       <Outlet />
-      <Footer />
     </main>
   );
 }

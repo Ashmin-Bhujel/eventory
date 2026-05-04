@@ -6,7 +6,7 @@ export default function Hero() {
     <section className="container mx-auto">
       <div className="mx-auto flex flex-col items-center justify-center gap-4 px-4 py-48 md:max-w-4xl md:py-72">
         <div className="flex flex-col text-center">
-          <h1 className="font-heading scroll-m-20 text-center text-3xl font-extrabold tracking-tight text-balance md:text-6xl">
+          <h1 className="font-heading scroll-m-20 text-center text-2xl font-extrabold tracking-tight text-balance md:text-6xl">
             Create, Manage & Connect.{" "}
             <span className="font-light text-amber-500 italic">Your Events, Your Way!</span>
           </h1>

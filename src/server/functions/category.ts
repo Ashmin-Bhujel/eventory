@@ -9,7 +9,7 @@ export const getCategoriesFn = createServerFn({
   method: "GET",
 }).handler(async () => {
   try {
-    connectDb();
+    await connectDb();
 
     const categories = await Category.find();
 

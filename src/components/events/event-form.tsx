@@ -80,6 +80,10 @@ export default function EventForm({ clerkUserId, type, eventData }: EventFormPro
         queryKey: ["get", "event", _id],
       });
 
+      queryClient.invalidateQueries({
+        queryKey: ["get", "coordinates", eventData ? eventData.location : ""],
+      });
+
       navigate({ to: "/events/$id", params: { id: _id } });
     },
     onError: (error) => {
