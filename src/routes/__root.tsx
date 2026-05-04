@@ -1,3 +1,5 @@
+import type { QueryClient } from "@tanstack/react-query";
+
 import NotFound from "#/components/shared/not-found";
 import { ThemeProvider } from "#/components/theme-provider.tsx";
 import { Toaster } from "#/components/ui/sonner";
@@ -7,13 +9,14 @@ import { ClerkProvider } from "@clerk/tanstack-react-start";
 import { ImageKitProvider } from "@imagekit/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import appCss from "../styles.css?url";
 
 type RouterContext = {
+  queryClient: QueryClient;
   isAuthenticated: boolean;
   userId: string | null;
 };
@@ -69,9 +72,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: NotFound,
 });
 
-const queryClient = new QueryClient();
-
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { queryClient } = Route.useRouteContext();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

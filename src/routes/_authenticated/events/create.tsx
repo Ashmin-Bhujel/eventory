@@ -1,5 +1,4 @@
 import EventForm from "#/components/events/event-form";
-import { useAuth } from "@clerk/tanstack-react-start";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/events/create")({
@@ -7,7 +6,7 @@ export const Route = createFileRoute("/_authenticated/events/create")({
 });
 
 function RouteComponent() {
-  const { userId } = useAuth();
+  const { userId } = Route.useRouteContext();
 
   return (
     <section className="container mx-auto">

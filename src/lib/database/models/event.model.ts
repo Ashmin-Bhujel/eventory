@@ -31,7 +31,7 @@ const eventSchema = new Schema(
     },
     isFree: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     url: {
       type: String,

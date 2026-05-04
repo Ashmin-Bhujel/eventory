@@ -147,7 +147,7 @@ export default function ImageUploader({ field, isInvalid }: { field: any; isInva
         </Field>
       )}
 
-      <Button onClick={handleUpload} disabled={progress > 0}>
+      <Button type="button" onClick={handleUpload} disabled={progress > 0}>
         {progress > 0 && progress < 100 ? <Spinner /> : "Upload Image"}
       </Button>
     </FieldGroup>

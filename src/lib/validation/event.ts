@@ -17,7 +17,7 @@ export const eventSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const createEventSchema = z
+export const eventFormSchema = z
   .object({
     title: z.string().trim().min(3, "Title must be at least 3 characters long"),
     description: z
@@ -48,5 +48,31 @@ export const createEventSchema = z
     path: ["price"],
   });
 
+export const eventResponseSchema = z.object({
+  _id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  location: z.string(),
+  imageUrl: z.string().optional(),
+  startDate: z.date(),
+  endDate: z.date(),
+  price: z.number(),
+  isFree: z.boolean(),
+  url: z.string().optional(),
+  organizer: z.object({
+    _id: z.string(),
+    clerkId: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+  }),
+  category: z.object({
+    _id: z.string(),
+    name: z.string(),
+  }),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
 export type Event = z.infer<typeof eventSchema>;
-export type CreateEventInput = z.infer<typeof createEventSchema>;
+export type EventFormInput = z.infer<typeof eventFormSchema>;
+export type EventResponse = z.infer<typeof eventResponseSchema>;

@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 export default function Hero() {
   return (
     <section className="container mx-auto">
-      <div className="mx-auto flex flex-col items-center justify-center gap-4 px-4 py-72 md:max-w-4xl">
+      <div className="mx-auto flex flex-col items-center justify-center gap-4 px-4 py-48 md:max-w-4xl md:py-72">
         <div className="flex flex-col text-center">
           <h1 className="font-heading scroll-m-20 text-center text-3xl font-extrabold tracking-tight text-balance md:text-6xl">
             Create, Manage & Connect.{" "}
@@ -18,7 +18,7 @@ export default function Hero() {
 
         <div>
           <Button variant={"outline"} size={"lg"} asChild>
-            <Link to="/events/create">Create Events</Link>
+            <Link to="/events">View Events</Link>
           </Button>
         </div>
       </div>

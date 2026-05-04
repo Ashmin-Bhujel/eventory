@@ -1,12 +1,13 @@
-import type { CreateEventInput } from "#/lib/validation/event";
+import type { EventFormInput, EventResponse } from "#/lib/validation/event";
 
-import { createEventMutationOptions } from "#/lib/mutations/event";
+import { createEventMutationOptions, updateEventMutationOptions } from "#/lib/mutations/event";
 import { getCategoriesQueryOptions } from "#/lib/query/category";
-import { createEventSchema } from "#/lib/validation/event";
+import { eventFormSchema } from "#/lib/validation/event";
 import { useForm } from "@tanstack/react-form-start";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { DollarSign, Link, MapPin } from "lucide-react";
-import { Activity, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { Link, MapPin } from "lucide-react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import DatePicker from "../shared/date-picker";
 import ImageUploader from "../shared/image-uploader";
@@ -39,53 +40,84 @@ import CategoryForm from "./category-form";
 
 type EventFormProps = {
   clerkUserId: string | null | undefined;
-  type: "create" | "edit";
+  type: "create" | "update";
+  eventData?: EventResponse;
 };
 
-export default function EventForm({ clerkUserId, type }: EventFormProps) {
-  const [showIsFreeField, setShowIsFreeField] = useState(true);
-  const [showPriceField, setShowPriceField] = useState(true);
-
+export default function EventForm({ clerkUserId, type, eventData }: EventFormProps) {
   const queryClient = useQueryClient();
+
+  const navigate = useNavigate();
 
   const { data: categories } = useSuspenseQuery(getCategoriesQueryOptions);
 
-  const { mutate, isPending } = useMutation({
+  const { mutate: createEventMutate, isPending: isCreatingEvent } = useMutation({
     ...createEventMutationOptions,
-    onSuccess: () => {
+    onSuccess: ({ _id }) => {
       toast.success("Event added successfully");
 
       queryClient.invalidateQueries({
         queryKey: ["get", "events"],
       });
+
+      navigate({ to: "/events/$id", params: { id: _id } });
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  const createEventFormDefaultValues: CreateEventInput = {
-    title: "",
-    description: "",
-    location: "",
-    imageUrl: "",
-    startDate: new Date(),
-    endDate: new Date(),
-    price: 0,
-    isFree: false,
-    url: "",
-    organizer: "",
-    category: "",
-  };
+  const { mutate: updateEventMutate, isPending: isUpdatingEvent } = useMutation({
+    ...updateEventMutationOptions(eventData ? eventData._id : ""),
+    onSuccess: ({ _id }) => {
+      toast.success("Event updated successfully");
+
+      queryClient.invalidateQueries({
+        queryKey: ["get", "events"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["get", "event", _id],
+      });
+
+      navigate({ to: "/events/$id", params: { id: _id } });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const dateNow = useMemo(() => new Date(), []);
+
+  const eventFormDefaultValues: EventFormInput = useMemo(
+    () => ({
+      title: eventData ? eventData.title : "",
+      description: eventData ? eventData.description : "",
+      location: eventData ? eventData.location : "",
+      imageUrl: eventData ? eventData.imageUrl : "",
+      startDate: eventData ? new Date(eventData.startDate) : dateNow,
+      endDate: eventData ? new Date(eventData.endDate) : dateNow,
+      price: eventData ? eventData.price : 0,
+      isFree: eventData ? eventData.isFree : true,
+      url: eventData ? eventData.url : "",
+      organizer: eventData ? eventData.organizer._id : "",
+      category: eventData ? eventData.category.name : "",
+    }),
+    [eventData, dateNow],
+  );
 
   const eventForm = useForm({
     formId: type === "create" ? "create-event-form" : "update-event-form",
     validators: {
-      onChange: type === "create" ? createEventSchema : undefined,
+      onChange: eventFormSchema,
     },
-    defaultValues: type === "create" ? createEventFormDefaultValues : undefined,
+    defaultValues: eventFormDefaultValues,
     onSubmit: async ({ value }) => {
-      mutate({ ...value, organizer: clerkUserId ?? "" });
+      if (type === "create") {
+        createEventMutate({ ...value, organizer: clerkUserId ?? "" });
+      } else {
+        updateEventMutate({ ...value, organizer: clerkUserId ?? "" });
+      }
     },
   });
 
@@ -259,14 +291,7 @@ export default function EventForm({ clerkUserId, type }: EventFormProps) {
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Start Date</FieldLabel>
 
-                    <DatePicker
-                      field={
-                        type === "create"
-                          ? { state: { value: undefined }, handleChange: field.handleChange }
-                          : field
-                      }
-                      text="Pick a Start Date"
-                    />
+                    <DatePicker field={field} text="Pick a Start Date" />
 
                     {isInvalid && <FieldError errors={field.state.meta.errors} />}
                   </Field>
@@ -283,14 +308,7 @@ export default function EventForm({ clerkUserId, type }: EventFormProps) {
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>End Date</FieldLabel>
 
-                    <DatePicker
-                      field={
-                        type === "create"
-                          ? { state: { value: undefined }, handleChange: field.handleChange }
-                          : field
-                      }
-                      text="Pick an End Date"
-                    />
+                    <DatePicker field={field} text="Pick an End Date" />
 
                     {isInvalid && <FieldError errors={field.state.meta.errors} />}
                   </Field>
@@ -330,100 +348,116 @@ export default function EventForm({ clerkUserId, type }: EventFormProps) {
               }}
             />
 
-            <Activity mode={showPriceField ? "visible" : "hidden"}>
-              <eventForm.Field
-                name="price"
-                children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            <eventForm.Field
+              name="price"
+              children={(field) => {
+                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Price</FieldLabel>
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Price</FieldLabel>
 
-                      <InputGroup>
-                        <InputGroupAddon>
-                          <DollarSign />
-                        </InputGroupAddon>
+                    <InputGroup>
+                      <InputGroupAddon>
+                        <span>NRs.</span>
+                      </InputGroupAddon>
 
-                        <InputGroupInput
-                          id={field.name}
-                          type="number"
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => {
-                            const value = e.target.valueAsNumber;
+                      <InputGroupInput
+                        id={field.name}
+                        type="string"
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
 
-                            if (value !== 0) {
-                              setShowIsFreeField(false);
-                            } else {
-                              setShowIsFreeField(true);
-                            }
+                          if (isNaN(value)) {
+                            return;
+                          }
 
-                            field.handleChange(value);
-                          }}
-                          aria-invalid={isInvalid}
-                          placeholder="Enter event price"
-                          autoComplete="off"
-                        />
-                      </InputGroup>
+                          if (value === 0) {
+                            eventForm.setFieldValue("isFree", true);
+                          } else {
+                            eventForm.setFieldValue("isFree", false);
+                          }
 
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          field.handleChange(value);
+                        }}
+                        aria-invalid={isInvalid}
+                        placeholder="Enter event price"
+                        autoComplete="off"
+                      />
+                    </InputGroup>
+
+                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  </Field>
+                );
+              }}
+            />
+
+            <eventForm.Field
+              name="isFree"
+              children={(field) => {
+                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <FieldLabel htmlFor={field.name}>
+                    <Field data-invalid={isInvalid} className="cursor-pointer">
+                      <FieldContent>
+                        <div className="flex items-center justify-between">
+                          <FieldTitle>Free Ticket?</FieldTitle>
+
+                          <Switch
+                            id={field.name}
+                            name={field.name}
+                            aria-invalid={isInvalid}
+                            checked={field.state.value}
+                            onCheckedChange={(checked) => {
+                              if (checked === true) {
+                                eventForm.setFieldValue("price", 0);
+                              }
+
+                              field.handleChange(checked === true);
+                            }}
+                          />
+                        </div>
+
+                        <FieldDescription>
+                          Toggle this on if your event offers free tickets. If enabled, the price
+                          field will be set to 0.
+                        </FieldDescription>
+                      </FieldContent>
                     </Field>
-                  );
-                }}
-              />
-            </Activity>
-
-            <Activity mode={showIsFreeField ? "visible" : "hidden"}>
-              <eventForm.Field
-                name="isFree"
-                children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-
-                  return (
-                    <FieldLabel htmlFor={field.name}>
-                      <Field data-invalid={isInvalid} className="cursor-pointer">
-                        <FieldContent>
-                          <div className="flex items-center justify-between">
-                            <FieldTitle>Free Ticket?</FieldTitle>
-
-                            <Switch
-                              id={field.name}
-                              name={field.name}
-                              aria-invalid={isInvalid}
-                              checked={field.state.value}
-                              onCheckedChange={(checked) => {
-                                if (checked === true) {
-                                  setShowPriceField(false);
-                                } else {
-                                  setShowPriceField(true);
-                                }
-
-                                field.handleChange(checked === true);
-                              }}
-                            />
-                          </div>
-
-                          <FieldDescription>
-                            Toggle this on if your event offers free tickets. If enabled, the price
-                            field will be hidden since it's not applicable.
-                          </FieldDescription>
-                        </FieldContent>
-                      </Field>
-                    </FieldLabel>
-                  );
-                }}
-              />
-            </Activity>
+                  </FieldLabel>
+                );
+              }}
+            />
 
             <Field>
               <Button
                 type="submit"
                 form={type === "create" ? "create-event-form" : "update-event-form"}
-                disabled={isPending}
+                disabled={isCreatingEvent || isUpdatingEvent}
               >
-                {isPending ? <Spinner /> : type === "create" ? "Create Event" : "Save Changes"}
+                {isCreatingEvent || isUpdatingEvent ? (
+                  <Spinner />
+                ) : type === "create" ? (
+                  "Create Event"
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+
+              <Button
+                type="reset"
+                variant={"outline"}
+                disabled={isCreatingEvent || isUpdatingEvent}
+                onClick={() => {
+                  eventForm.reset();
+                  toast.success("Form reset successfully");
+                }}
+              >
+                Reset
               </Button>
             </Field>
           </FieldGroup>
