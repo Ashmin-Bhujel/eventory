@@ -1,6 +1,7 @@
-import { Button } from "#/components/ui/button";
+import EventsCollection from "#/components/shared/events-collection";
 import { Spinner } from "#/components/ui/spinner";
 import { getEventsQueryOptions } from "#/lib/query/event";
+import { Button } from "@/components/ui/button";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_public/events/")({
@@ -73,16 +74,12 @@ function RouteComponent() {
 
   return (
     <section className="container mx-auto">
-      <div className="px-4 py-6">
-        <div className="flex flex-col gap-6">
-          {events.map((event) => (
-            <Button key={event._id} variant={"outline"} size={"lg"} asChild>
-              <Link to="/events/$id" params={{ id: event._id }}>
-                {event.title}
-              </Link>
-            </Button>
-          ))}
-        </div>
+      <div className="px-4 py-6 pb-20">
+        <h1 className="font-heading scroll-m-20 pb-10 text-center text-4xl font-extrabold tracking-tight text-balance">
+          Events
+        </h1>
+
+        <EventsCollection events={events} />
       </div>
     </section>
   );
