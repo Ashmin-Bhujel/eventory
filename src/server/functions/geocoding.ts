@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const OPENWEATHER_API_KEY = Bun.env.OPENWEATHER_API_KEY;
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 
 export const getCoordinatesFn = createServerFn({
   method: "GET",

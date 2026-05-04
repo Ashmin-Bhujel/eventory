@@ -1,8 +1,8 @@
 import ImageKit from "@imagekit/nodejs";
 import { createFileRoute } from "@tanstack/react-router";
 
-const IMAGEKIT_PUBLIC_KEY = Bun.env.IMAGEKIT_PUBLIC_KEY;
-const IMAGEKIT_PRIVATE_KEY = Bun.env.IMAGEKIT_PRIVATE_KEY;
+const IMAGEKIT_PUBLIC_KEY = process.env.IMAGEKIT_PUBLIC_KEY;
+const IMAGEKIT_PRIVATE_KEY = process.env.IMAGEKIT_PRIVATE_KEY;
 
 export const Route = createFileRoute("/api/auth/imagekit")({
   server: {
