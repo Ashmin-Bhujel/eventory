@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ModeToggle } from "../mode-toggle";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import MobileNav from "./mobile-nav";
 
 export default function Header() {
   return (
@@ -20,6 +21,14 @@ export default function Header() {
               {({ isActive }) => (
                 <Button variant={isActive ? "secondary" : "ghost"} asChild>
                   <span>Home</span>
+                </Button>
+              )}
+            </Link>
+
+            <Link to="/events">
+              {({ isActive }) => (
+                <Button variant={isActive ? "secondary" : "ghost"} asChild>
+                  <span>Events</span>
                 </Button>
               )}
             </Link>
@@ -55,6 +64,22 @@ export default function Header() {
             </Show>
 
             <ModeToggle />
+          </div>
+
+          <div className="flex items-center gap-4 md:hidden">
+            <Show when={"signed-in"}>
+              <UserButton fallback={<Skeleton className="size-7" />} />
+            </Show>
+
+            <Show when={"signed-out"}>
+              <Link to="/login/$">
+                <Button variant={"outline"} asChild>
+                  <span>Login</span>
+                </Button>
+              </Link>
+            </Show>
+
+            <MobileNav />
           </div>
         </div>
       </div>

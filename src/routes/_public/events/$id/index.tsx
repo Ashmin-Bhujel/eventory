@@ -231,7 +231,12 @@ function RouteComponent() {
               </div>
 
               {event.url && (
-                <a href={event.url} className="group flex items-center gap-2">
+                <a
+                  href={event.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-2"
+                >
                   <LinkIcon />
                   <span className="underline-offset-4 group-hover:underline">{event.url}</span>
                 </a>
@@ -239,12 +244,16 @@ function RouteComponent() {
             </div>
 
             {coordinates && (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 pb-16">
                 <h3 className="font-heading scroll-m-20 text-2xl font-semibold tracking-tight">
                   Location
                 </h3>
 
-                <LocationMap coordinates={coordinates} />
+                <LocationMap
+                  coordinates={coordinates}
+                  eventTitle={event.title}
+                  eventLocation={event.location}
+                />
               </div>
             )}
           </div>
