@@ -5,6 +5,7 @@ import { Category } from "#/lib/database/models/category.model";
 import { Event } from "#/lib/database/models/event.model";
 import { User } from "#/lib/database/models/user.model";
 import { eventFormSchema } from "#/lib/validation/event";
+import { auth } from "@clerk/tanstack-react-start/server";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
@@ -14,9 +15,15 @@ export const createEventFn = createServerFn({
   .inputValidator((data: EventFormInput) => eventFormSchema.parse(data))
   .handler(async ({ data }) => {
     try {
-      connectDb();
+      const { userId } = await auth();
 
-      const organizer = await User.exists({ clerkId: data.organizer });
+      if (!userId) {
+        throw new Error("Unauthorized");
+      }
+
+      await connectDb();
+
+      const organizer = await User.exists({ clerkId: userId });
 
       if (!organizer) {
         throw new Error("Organizer not found");
@@ -54,7 +61,7 @@ export const getEventByIdFn = createServerFn({
   .inputValidator((data: { id: string }) => z.object({ id: z.string() }).parse(data))
   .handler(async ({ data }) => {
     try {
-      connectDb();
+      await connectDb();
 
       const event = await Event.findById(data.id)
         .populate({ path: "organizer", select: "firstName lastName clerkId" })
@@ -82,7 +89,7 @@ export const getEventsFn = createServerFn({
   method: "GET",
 }).handler(async () => {
   try {
-    connectDb();
+    await connectDb();
 
     const events = await Event.find()
       .populate({ path: "organizer", select: "firstName lastName clerkId" })
@@ -113,9 +120,15 @@ export const updateEventFn = createServerFn({
   )
   .handler(async ({ data }) => {
     try {
-      connectDb();
+      const { userId } = await auth();
 
-      const organizer = await User.exists({ clerkId: data.formData.organizer });
+      if (!userId) {
+        throw new Error("Unauthorized");
+      }
+
+      await connectDb();
+
+      const organizer = await User.exists({ clerkId: userId });
 
       if (!organizer) {
         throw new Error("Organizer not found");
@@ -135,9 +148,17 @@ export const updateEventFn = createServerFn({
         category: category._id,
       };
 
-      const updatedEvent = await Event.findOneAndUpdate({ _id: data.eventId }, newEvent, {
-        returnDocument: "after",
-      });
+      const updatedEvent = await Event.findOneAndUpdate(
+        { _id: data.eventId, organizer: organizer._id },
+        newEvent,
+        {
+          returnDocument: "after",
+        },
+      );
+
+      if (!updatedEvent) {
+        throw new Error("Event not found or not authorized");
+      }
 
       return JSON.parse(JSON.stringify(updatedEvent)) as EventType;
     } catch (error) {
@@ -155,12 +176,26 @@ export const deleteEventFn = createServerFn({
   .inputValidator((data: { id: string }) => z.object({ id: z.string() }).parse(data))
   .handler(async ({ data }) => {
     try {
-      connectDb();
+      const { userId } = await auth();
 
-      const deletedEvent = await Event.findByIdAndDelete(data.id, { returnDocument: "after" });
+      if (!userId) {
+        throw new Error("Unauthorized");
+      }
+
+      await connectDb();
+
+      const organizer = await User.exists({ clerkId: userId });
+
+      if (!organizer) {
+        throw new Error("Organizer not found");
+      }
+      const deletedEvent = await Event.findOneAndDelete(
+        { _id: data.id, organizer: organizer._id },
+        { returnDocument: "after" },
+      );
 
       if (!deletedEvent) {
-        throw new Error("Event not found");
+        throw new Error("Event not found or not authorized");
       }
 
       return JSON.parse(JSON.stringify(deletedEvent)) as EventType;

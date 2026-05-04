@@ -5,11 +5,16 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/_authenticated/events/$id/update")({
   component: RouteComponent,
   loader: async ({ params, context }) => {
-    const { id } = params;
+    try {
+      const { id } = params;
 
-    const event = await context.queryClient.fetchQuery({ ...getEventByIdQueryOptions(id) });
+      const event = await context.queryClient.fetchQuery({ ...getEventByIdQueryOptions(id) });
 
-    return { event };
+      return { event };
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      throw new Error("Failed to fetch event");
+    }
   },
 });
 

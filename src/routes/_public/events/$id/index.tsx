@@ -1,9 +1,10 @@
+import LocationMap from "#/components/shared/location-map";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { Skeleton } from "#/components/ui/skeleton";
 import { Spinner } from "#/components/ui/spinner";
 import { deleteEventMutationOptions } from "#/lib/mutations/event";
 import { getEventByIdQueryOptions } from "#/lib/query/event";
+import { getCoordinatesQueryOptions } from "#/lib/query/geocoding";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,17 +25,65 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_public/events/$id/")({
   component: RouteComponent,
+  pendingComponent: EventLoading,
+  errorComponent: EventError,
+  ssr: "data-only",
   loader: async ({ params, context }) => {
-    const { id } = params;
+    try {
+      const { id } = params;
 
-    const event = await context.queryClient.fetchQuery({ ...getEventByIdQueryOptions(id) });
+      const event = await context.queryClient.fetchQuery({ ...getEventByIdQueryOptions(id) });
 
-    return { event };
+      const coordinates = event
+        ? await context.queryClient.fetchQuery({
+            ...getCoordinatesQueryOptions(event.location),
+          })
+        : null;
+
+      return { event, coordinates };
+    } catch (error) {
+      console.error("Error fetching event or coordinates:", error);
+      throw new Error("Failed to fetch event or coordinates");
+    }
   },
 });
 
+function EventLoading() {
+  return (
+    <section className="container mx-auto">
+      <div className="px-4 py-10">
+        <div className="flex flex-col items-center justify-center gap-3">
+          <Spinner />
+          <p className="text-muted-foreground text-sm">Loading event...</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function EventError() {
+  return (
+    <section className="container mx-auto">
+      <div className="px-4 py-10">
+        <div className="flex flex-col items-center justify-center gap-4 text-center">
+          <h1 className="font-heading text-2xl font-semibold">Unable to load event</h1>
+          <p className="text-muted-foreground text-sm">
+            Please try again or go back to the events list.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+            <Button variant="outline" asChild>
+              <Link to="/events">Back to events</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function RouteComponent() {
-  const { event } = Route.useLoaderData();
+  const { event, coordinates } = Route.useLoaderData();
   const { isAuthenticated, userId } = Route.useRouteContext();
 
   const queryClient = useQueryClient();
@@ -77,12 +126,10 @@ function RouteComponent() {
     <section className="container mx-auto">
       <div className="px-4 py-6">
         <div className="flex flex-col gap-6">
-          {event.imageUrl ? (
+          {event.imageUrl && (
             <div className="aspect-video w-full overflow-hidden rounded-2xl *:[img]:h-full *:[img]:w-full *:[img]:object-cover">
               <Image src={event.imageUrl} alt={event.title} />
             </div>
-          ) : (
-            <Skeleton />
           )}
 
           <div className="flex w-full flex-col gap-6">
@@ -176,7 +223,7 @@ function RouteComponent() {
 
             <div className="flex flex-col gap-4">
               <div>
-                <h2 className="font-heading scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+                <h2 className="font-heading scroll-m-20 pb-2 text-3xl font-semibold tracking-tight">
                   Description
                 </h2>
 
@@ -190,6 +237,16 @@ function RouteComponent() {
                 </a>
               )}
             </div>
+
+            {coordinates && (
+              <div className="flex flex-col gap-4">
+                <h3 className="font-heading scroll-m-20 text-2xl font-semibold tracking-tight">
+                  Location
+                </h3>
+
+                <LocationMap coordinates={coordinates} />
+              </div>
+            )}
           </div>
         </div>
       </div>
