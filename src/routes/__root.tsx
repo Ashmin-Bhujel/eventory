@@ -1,9 +1,48 @@
+import type { QueryClient } from "@tanstack/react-query";
+
+import NotFound from "#/components/shared/not-found";
+import { ThemeProvider } from "#/components/theme-provider.tsx";
+import { Toaster } from "#/components/ui/sonner";
+import { TooltipProvider } from "#/components/ui/tooltip";
+import { authStateFn } from "#/server/functions/auth.ts";
+import { ClerkProvider } from "@clerk/tanstack-react-start";
+import { ImageKitProvider } from "@imagekit/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import appCss from "../styles.css?url";
 
-export const Route = createRootRoute({
+type RouterContext = {
+  queryClient: QueryClient;
+  isAuthenticated: boolean;
+  userId: string | null;
+};
+
+export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async () => {
+    try {
+      const { isAuthenticated, userId } = await authStateFn();
+
+      return {
+        isAuthenticated,
+        userId,
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error fetching auth state:", error.message);
+      } else {
+        console.error("Unknown error fetching auth state:", error);
+      }
+
+      return {
+        isAuthenticated: false,
+        userId: null,
+      };
+    }
+  },
   head: () => ({
     meta: [
       {
@@ -30,31 +69,52 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootDocument,
-  notFoundComponent: () => <div>404 - Not Found</div>,
+  notFoundComponent: NotFound,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { queryClient } = Route.useRouteContext();
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-            hideUntilHover: true,
-            defaultOpen: false,
-            openHotkey: ["Control", "Shift", "D"],
-          }}
-          plugins={[
-            {
-              name: "TanStack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        <ClerkProvider>
+          <QueryClientProvider client={queryClient}>
+            <ImageKitProvider urlEndpoint={import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT}>
+              <ThemeProvider defaultTheme="system" storageKey="theme">
+                <TooltipProvider>
+                  {children}
+                  <Toaster />
+                  <TanStackDevtools
+                    config={{
+                      position: "bottom-right",
+                      hideUntilHover: true,
+                      defaultOpen: false,
+                      openHotkey: ["Control", "Shift", "D"],
+                    }}
+                    plugins={[
+                      {
+                        name: "TanStack Form",
+                        render: <FormDevtoolsPanel />,
+                      },
+                      {
+                        name: "TanStack Query",
+                        render: <ReactQueryDevtoolsPanel />,
+                      },
+                      {
+                        name: "TanStack Router",
+                        render: <TanStackRouterDevtoolsPanel />,
+                      },
+                    ]}
+                  />
+                </TooltipProvider>
+              </ThemeProvider>
+            </ImageKitProvider>
+          </QueryClientProvider>
+        </ClerkProvider>
         <Scripts />
       </body>
     </html>
