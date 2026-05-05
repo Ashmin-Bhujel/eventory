@@ -21,14 +21,14 @@ export const Route = createFileRoute("/api/payment/verify")({
           await connectDb();
 
           const updatedOrder = await updateOrderStatusFn({
-            data: { pidx: verifyResult.pidx, status: verifyResult.status },
+            pidx: verifyResult.pidx,
+            status: verifyResult.status,
           });
 
           if (!updatedOrder) {
             throw new Error("Failed to update order status based on payment verification");
           }
 
-          // Redirect to events page after successful verification and order update
           return new Response(null, {
             status: 302,
             headers: {

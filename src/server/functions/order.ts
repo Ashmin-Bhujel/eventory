@@ -6,67 +6,57 @@ import { createOrderSchema } from "#/lib/validation/order";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-export const createOrderFn = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: CreateOrderInput) => createOrderSchema.parse(data))
-  .handler(async ({ data }) => {
-    try {
-      await connectDb();
+export async function createOrderFn(data: CreateOrderInput) {
+  try {
+    const createOrderData = createOrderSchema.parse(data);
 
-      const createdOrder = await Order.create(data);
+    await connectDb();
 
-      return JSON.parse(JSON.stringify(createdOrder)) as OrderType;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error creating order:", error.message);
-      } else {
-        console.error("Unknown error creating order");
-      }
+    const createdOrder = await Order.create(createOrderData);
 
-      return null;
+    return JSON.parse(JSON.stringify(createdOrder)) as OrderType;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error creating order:", error.message);
+    } else {
+      console.error("Unknown error creating order");
     }
-  });
 
-export const updateOrderPidxFn = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { orderId: string; pidx: string }) =>
-    z.object({ orderId: z.string(), pidx: z.string() }).parse(data),
-  )
-  .handler(async ({ data }) => {
-    try {
-      await connectDb();
+    return null;
+  }
+}
 
-      const { orderId, pidx } = data;
+export async function updateOrderPidxFn(data: { orderId: string; pidx: string }) {
+  try {
+    const updatePidxData = z.object({ orderId: z.string(), pidx: z.string() }).parse(data);
 
-      const updatedOrder = await Order.findByIdAndUpdate(
-        orderId,
-        { pidx },
-        { returnDocument: "after" },
-      );
+    await connectDb();
 
-      if (!updatedOrder) {
-        throw new Error("Order not found");
-      }
+    const updatedOrder = await Order.findByIdAndUpdate(
+      updatePidxData.orderId,
+      { pidx: updatePidxData.pidx },
+      { returnDocument: "after" },
+    );
 
-      return JSON.parse(JSON.stringify(updatedOrder)) as OrderType;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error updating order pidx:", error.message);
-      } else {
-        console.error("Unknown error updating order pidx");
-      }
-
-      return null;
+    if (!updatedOrder) {
+      throw new Error("Order not found");
     }
-  });
 
-export const updateOrderStatusFn = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: { pidx: string; status: OrderType["status"] }) =>
-    z
+    return JSON.parse(JSON.stringify(updatedOrder)) as OrderType;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error updating order pidx:", error.message);
+    } else {
+      console.error("Unknown error updating order pidx");
+    }
+
+    return null;
+  }
+}
+
+export async function updateOrderStatusFn(data: { pidx: string; status: OrderType["status"] }) {
+  try {
+    const updateStatusData = z
       .object({
         pidx: z.string(),
         status: z.enum([
@@ -79,35 +69,33 @@ export const updateOrderStatusFn = createServerFn({
           "Partially Refunded",
         ]),
       })
-      .parse(data),
-  )
-  .handler(async ({ data }) => {
-    try {
-      await connectDb();
+      .parse(data);
 
-      const { pidx, status } = data;
+    await connectDb();
 
-      const updatedOrder = await Order.findOneAndUpdate(
-        { pidx },
-        { status },
-        { returnDocument: "after" },
-      );
+    const { pidx, status } = updateStatusData;
 
-      if (!updatedOrder) {
-        throw new Error("Order not found");
-      }
+    const updatedOrder = await Order.findOneAndUpdate(
+      { pidx },
+      { status },
+      { returnDocument: "after" },
+    );
 
-      return JSON.parse(JSON.stringify(updatedOrder)) as OrderType;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error updating order status:", error.message);
-      } else {
-        console.error("Unknown error updating order status");
-      }
-
-      return null;
+    if (!updatedOrder) {
+      throw new Error("Order not found");
     }
-  });
+
+    return JSON.parse(JSON.stringify(updatedOrder)) as OrderType;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error updating order status:", error.message);
+    } else {
+      console.error("Unknown error updating order status");
+    }
+
+    return null;
+  }
+}
 
 export const getUserOrdersFn = createServerFn({
   method: "GET",

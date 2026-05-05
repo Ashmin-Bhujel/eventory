@@ -28,13 +28,11 @@ export async function initiatePaymentFn(data: InitiatePaymentData) {
     await connectDb();
 
     const createdOrder = await createOrderFn({
-      data: {
-        pidx: crypto.randomUUID(),
-        totalAmount: calculatedAmount,
-        status: data.amount === 0 ? "Completed" : "Pending",
-        event: data.event,
-        buyer: data.buyer,
-      },
+      pidx: crypto.randomUUID(),
+      totalAmount: calculatedAmount,
+      status: data.amount === 0 ? "Completed" : "Pending",
+      event: data.event,
+      buyer: data.buyer,
     });
 
     if (!createdOrder) {
@@ -102,9 +100,7 @@ export async function initiatePaymentFn(data: InitiatePaymentData) {
 
     const result: InitiatePaymentResponse = await response.json();
 
-    const updatedOrder = await updateOrderPidxFn({
-      data: { pidx: result.pidx, orderId: createdOrder._id },
-    });
+    const updatedOrder = await updateOrderPidxFn({ pidx: result.pidx, orderId: createdOrder._id });
 
     if (!updatedOrder) {
       throw new Error("Failed to update order with pidx");
