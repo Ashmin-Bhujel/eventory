@@ -10,105 +10,98 @@ import { Event } from "#/lib/database/models/event.model.ts";
 import { Order } from "#/lib/database/models/order.model.ts";
 import { User } from "#/lib/database/models/user.model.ts";
 import { createUserSchema, deleteUserSchema, updateUserSchema } from "#/lib/validation/user.ts";
-import { createServerFn } from "@tanstack/react-start";
 
-export const createUserFn = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: CreateUserInput) => createUserSchema.parse(data))
-  .handler(async ({ data }) => {
-    try {
-      await connectDb();
+export async function createUserFn({ data }: { data: CreateUserInput }) {
+  try {
+    const createUserData = createUserSchema.parse(data);
 
-      const createdUser = await User.create(data);
+    await connectDb();
 
-      return JSON.parse(JSON.stringify(createdUser)) as UserType;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error creating user:", error.message);
-      } else {
-        console.error("Unknown error creating user:", error);
-      }
+    const createdUser = await User.create(createUserData);
 
+    return JSON.parse(JSON.stringify(createdUser)) as UserType;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error creating user:", error.message);
+    } else {
+      console.error("Unknown error creating user:", error);
+    }
+
+    return null;
+  }
+}
+
+export async function updateUserFn({ data }: { data: UpdateUserInput }) {
+  try {
+    const updateUserData = updateUserSchema.parse(data);
+
+    await connectDb();
+
+    const { clerkId, ...updateData } = updateUserData;
+
+    const updatedUser = await User.findOneAndUpdate({ clerkId }, updateData, {
+      returnDocument: "after",
+    });
+
+    if (!updatedUser) {
+      console.error("User not found for update:", clerkId);
       return null;
     }
-  });
 
-export const updateUserFn = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: UpdateUserInput) => updateUserSchema.parse(data))
-  .handler(async ({ data }) => {
-    try {
-      await connectDb();
+    return JSON.parse(JSON.stringify(updatedUser)) as UserType;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error updating user:", error.message);
+    } else {
+      console.error("Unknown error updating user:", error);
+    }
 
-      const { clerkId, ...updateData } = data;
+    return null;
+  }
+}
 
-      const updatedUser = await User.findOneAndUpdate({ clerkId }, updateData, {
-        returnDocument: "after",
-      });
+export async function deleteUserFn({ data }: { data: DeleteUserInput }) {
+  try {
+    const deleteUserData = deleteUserSchema.parse(data);
 
-      if (!updatedUser) {
-        console.error("User not found for update:", clerkId);
-        return null;
-      }
+    await connectDb();
 
-      return JSON.parse(JSON.stringify(updatedUser)) as UserType;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error updating user:", error.message);
-      } else {
-        console.error("Unknown error updating user:", error);
-      }
+    const userToDelete = await User.findOne({ clerkId: deleteUserData.clerkId });
 
+    if (!userToDelete) {
+      console.error("User not found for deletion:", deleteUserData.clerkId);
       return null;
     }
-  });
 
-export const deleteUserFn = createServerFn({
-  method: "POST",
-})
-  .inputValidator((data: DeleteUserInput) => deleteUserSchema.parse(data))
-  .handler(async ({ data }) => {
-    try {
-      await connectDb();
+    await Promise.all([
+      Event.updateMany(
+        { organizer: userToDelete._id },
+        {
+          $unset: { organizer: 1 },
+        },
+      ),
 
-      const userToDelete = await User.findOne({ clerkId: data.clerkId });
+      Order.updateMany({ buyer: userToDelete._id }, { $unset: { buyer: 1 } }),
+    ]);
 
-      if (!userToDelete) {
-        console.error("User not found for deletion:", data.clerkId);
-        return null;
-      }
+    const deletedUser = await User.findOneAndDelete(
+      { clerkId: deleteUserData.clerkId },
+      { returnDocument: "after" },
+    );
 
-      await Promise.all([
-        Event.updateMany(
-          { organizer: userToDelete._id },
-          {
-            $unset: { organizer: 1 },
-          },
-        ),
-
-        Order.updateMany({ buyer: userToDelete._id }, { $unset: { buyer: 1 } }),
-      ]);
-
-      const deletedUser = await User.findOneAndDelete(
-        { clerkId: data.clerkId },
-        { returnDocument: "after" },
-      );
-
-      if (!deletedUser) {
-        console.error("User not found for deletion:", data.clerkId);
-        return null;
-      }
-
-      return JSON.parse(JSON.stringify(deletedUser)) as UserType;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error deleting user:", error.message);
-      } else {
-        console.error("Unknown error deleting user:", error);
-      }
-
+    if (!deletedUser) {
+      console.error("User not found for deletion:", deleteUserData.clerkId);
       return null;
     }
-  });
+
+    return JSON.parse(JSON.stringify(deletedUser)) as UserType;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error deleting user:", error.message);
+    } else {
+      console.error("Unknown error deleting user:", error);
+    }
+
+    return null;
+  }
+}
