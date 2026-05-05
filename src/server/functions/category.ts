@@ -18,7 +18,7 @@ export const getCategoriesFn = createServerFn({
     if (error instanceof Error) {
       console.error("Error fetching categories:", error.message);
     } else {
-      console.error("Unknown error fetching categories:", error);
+      console.error("Unknown error fetching categories");
     }
 
     return [];

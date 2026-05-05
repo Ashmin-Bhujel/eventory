@@ -91,7 +91,12 @@ export const Route = createFileRoute("/api/webhooks/clerk")({
           console.log("Received Clerk webhook event of type:", eventType);
           return new Response("Webhook received", { status: 200 });
         } catch (err) {
-          console.error("Error verifying webhook:", err);
+          if (err instanceof Error) {
+            console.error("Error verifying webhook:", err.message);
+          } else {
+            console.error("Unknown error verifying webhook");
+          }
+
           return new Response("Error verifying webhook", { status: 400 });
         }
       },

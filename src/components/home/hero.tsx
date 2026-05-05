@@ -17,7 +17,7 @@ export default function Hero() {
         </div>
 
         <div>
-          <Button variant={"outline"} size={"lg"} asChild>
+          <Button size={"lg"} asChild>
             <Link to="/events">View Events</Link>
           </Button>
         </div>

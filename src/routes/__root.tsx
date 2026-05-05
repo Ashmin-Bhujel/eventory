@@ -34,7 +34,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       if (error instanceof Error) {
         console.error("Error fetching auth state:", error.message);
       } else {
-        console.error("Unknown error fetching auth state:", error);
+        console.error("Unknown error fetching auth state");
       }
 
       return {

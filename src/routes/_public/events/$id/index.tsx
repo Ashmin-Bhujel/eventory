@@ -42,7 +42,12 @@ export const Route = createFileRoute("/_public/events/$id/")({
 
       return { event, coordinates };
     } catch (error) {
-      console.error("Error fetching event or coordinates:", error);
+      if (error instanceof Error) {
+        console.error("Error fetching event or coordinates:", error.message);
+      } else {
+        console.error("Unknown error fetching event or coordinates");
+      }
+
       throw new Error("Failed to fetch event or coordinates");
     }
   },
@@ -159,8 +164,9 @@ function RouteComponent() {
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                {/* Todo: Implement registration functionality */}
-                <Button>{event.isFree ? "Register for free" : "Buy ticket"}</Button>
+                <Link to="/events/$id/register" params={{ id: event._id }}>
+                  <Button>{event.isFree ? "Register for free" : "Buy ticket"}</Button>
+                </Link>
 
                 {isAuthenticated && userId === event.organizer.clerkId && (
                   <Link to="/events/$id/update" params={{ id: event._id }}>

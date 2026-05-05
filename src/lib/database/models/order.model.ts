@@ -4,13 +4,14 @@ import { User } from "./user.model";
 
 const orderSchema = new Schema(
   {
-    stripeId: {
+    pidx: {
       type: String,
       required: true,
       unique: true,
     },
     totalAmount: {
-      type: String,
+      type: Number,
+      required: true,
     },
     event: {
       type: Schema.Types.ObjectId,
@@ -19,6 +20,19 @@ const orderSchema = new Schema(
     buyer: {
       type: Schema.Types.ObjectId,
       ref: User,
+    },
+    status: {
+      type: String,
+      enum: [
+        "Completed",
+        "Pending",
+        "Expired",
+        "Initiated",
+        "Refunded",
+        "User canceled",
+        "Partially Refunded",
+      ],
+      default: "Pending",
     },
   },
   {
