@@ -48,7 +48,7 @@ export const getCoordinatesFn = createServerFn({
       if (error instanceof Error) {
         console.error("Error fetching geocoding data:", error.message);
       } else {
-        console.error("Unknown error fetching geocoding data:");
+        console.error("Unknown error fetching geocoding data");
       }
 
       return null;

@@ -12,7 +12,12 @@ export const Route = createFileRoute("/_authenticated/events/$id/update")({
 
       return { event };
     } catch (error) {
-      console.error("Error fetching event:", error);
+      if (error instanceof Error) {
+        console.error("Error fetching event:", error.message);
+      } else {
+        console.error("Unknown error fetching event");
+      }
+
       throw new Error("Failed to fetch event");
     }
   },

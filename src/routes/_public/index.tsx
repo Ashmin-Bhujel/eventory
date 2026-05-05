@@ -15,7 +15,12 @@ export const Route = createFileRoute("/_public/")({
 
       return { events };
     } catch (error) {
-      console.error("Error fetching events:", error);
+      if (error instanceof Error) {
+        console.error("Error fetching events:", error.message);
+      } else {
+        console.error("Unknown error fetching events");
+      }
+
       throw new Error("Failed to fetch events");
     }
   },

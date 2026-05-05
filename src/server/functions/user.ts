@@ -24,7 +24,7 @@ export async function createUserFn({ data }: { data: CreateUserInput }) {
     if (error instanceof Error) {
       console.error("Error creating user:", error.message);
     } else {
-      console.error("Unknown error creating user:", error);
+      console.error("Unknown error creating user");
     }
 
     return null;
@@ -53,7 +53,7 @@ export async function updateUserFn({ data }: { data: UpdateUserInput }) {
     if (error instanceof Error) {
       console.error("Error updating user:", error.message);
     } else {
-      console.error("Unknown error updating user:", error);
+      console.error("Unknown error updating user");
     }
 
     return null;
@@ -99,7 +99,7 @@ export async function deleteUserFn({ data }: { data: DeleteUserInput }) {
     if (error instanceof Error) {
       console.error("Error deleting user:", error.message);
     } else {
-      console.error("Unknown error deleting user:", error);
+      console.error("Unknown error deleting user");
     }
 
     return null;

@@ -33,7 +33,7 @@ export const Route = createFileRoute("/api/auth/imagekit")({
           if (error instanceof Error) {
             console.error("Error generating ImageKit authentication parameters:", error.message);
           } else {
-            console.error("Unknown error generating ImageKit authentication parameters:", error);
+            console.error("Unknown error generating ImageKit authentication parameters");
           }
 
           return new Response(
