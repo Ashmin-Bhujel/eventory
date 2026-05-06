@@ -1,6 +1,6 @@
-import type { InitiatePaymentData } from "#/lib/validation/payment";
+import type { InitiatePaymentData } from "#/lib/zod/payment.schema";
 
-import { initiatePaymentFn } from "#/server/functions/payment";
+import { initiatePaymentService } from "#/server/services/payment.service";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/payment/initiate")({
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/api/payment/initiate")({
         try {
           const requestBody: InitiatePaymentData = await request.json();
 
-          const result = await initiatePaymentFn(requestBody);
+          const result = await initiatePaymentService(requestBody);
 
           return new Response(JSON.stringify(result), {
             status: 200,

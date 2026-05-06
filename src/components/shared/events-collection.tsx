@@ -1,4 +1,4 @@
-import type { EventResponse } from "#/lib/validation/event";
+import type { EventResponse } from "#/lib/zod/event.schema";
 
 import { Skeleton } from "#/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ export default function EventsCollection({ events }: { events: EventResponse[] }
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {events.map((event) => (
-        <Card key={event._id} className="relative mx-auto w-full max-w-sm pt-0">
+        <Card key={event._id.toString()} className="relative mx-auto w-full max-w-sm pt-0">
           {event.imageUrl ? (
             <Image
               src={event.imageUrl}
@@ -60,7 +60,7 @@ export default function EventsCollection({ events }: { events: EventResponse[] }
           </CardContent>
 
           <CardFooter>
-            <Link to="/events/$id" params={{ id: event._id }} className="w-full">
+            <Link to="/events/$id" params={{ id: event._id.toString() }} className="w-full">
               <Button className="w-full" asChild>
                 <span>View Event</span>
               </Button>

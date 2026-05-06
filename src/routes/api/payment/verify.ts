@@ -1,6 +1,5 @@
-import { connectDb } from "#/lib/database/db";
-import { updateOrderStatusFn } from "#/server/functions/order";
-import { verifyPaymentFn } from "#/server/functions/payment";
+import { updateOrderStatusService } from "#/server/services/order.service";
+import { verifyPaymentService } from "#/server/services/payment.service";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/payment/verify")({
@@ -16,11 +15,9 @@ export const Route = createFileRoute("/api/payment/verify")({
         }
 
         try {
-          const verifyResult = await verifyPaymentFn(pidx);
+          const verifyResult = await verifyPaymentService(pidx);
 
-          await connectDb();
-
-          const updatedOrder = await updateOrderStatusFn({
+          const updatedOrder = await updateOrderStatusService({
             pidx: verifyResult.pidx,
             status: verifyResult.status,
           });
@@ -32,17 +29,13 @@ export const Route = createFileRoute("/api/payment/verify")({
           return new Response(null, {
             status: 302,
             headers: {
-              Location: "/events",
+              Location: "/profile",
             },
           });
         } catch (error) {
           if (error instanceof Error) {
-            console.error("Error verifying payment:", error.message);
-
             return new Response(`Error verifying payment: ${error.message}`, { status: 500 });
           } else {
-            console.error("Unknown error verifying payment");
-
             return new Response("Unknown error verifying payment", { status: 500 });
           }
         }

@@ -1,8 +1,11 @@
-import type { EventFormInput, EventResponse } from "#/lib/validation/event";
+import type { EventFormInput, EventResponse } from "#/lib/zod/event.schema";
 
-import { createEventMutationOptions, updateEventMutationOptions } from "#/lib/mutations/event";
-import { getCategoriesQueryOptions } from "#/lib/query/category";
-import { eventFormSchema } from "#/lib/validation/event";
+import {
+  createEventMutationOptions,
+  updateEventMutationOptions,
+} from "#/lib/mutations/event.mutation";
+import { getCategoriesQueryOptions } from "#/lib/query/category.query";
+import { eventFormSchema } from "#/lib/zod/event.schema";
 import { useForm } from "@tanstack/react-form-start";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -68,7 +71,7 @@ export default function EventForm({ clerkUserId, type, eventData }: EventFormPro
   });
 
   const { mutate: updateEventMutate, isPending: isUpdatingEvent } = useMutation({
-    ...updateEventMutationOptions(eventData ? eventData._id : ""),
+    ...updateEventMutationOptions(eventData ? eventData._id.toString() : ""),
     onSuccess: ({ _id }) => {
       toast.success("Event updated successfully");
 
@@ -104,7 +107,7 @@ export default function EventForm({ clerkUserId, type, eventData }: EventFormPro
       price: eventData ? eventData.price : 0,
       isFree: eventData ? eventData.isFree : true,
       url: eventData ? eventData.url : "",
-      organizer: eventData ? eventData.organizer._id : "",
+      organizer: eventData ? eventData.organizer._id.toString() : "",
       category: eventData ? eventData.category.name : "",
     }),
     [eventData, dateNow],
@@ -196,7 +199,7 @@ export default function EventForm({ clerkUserId, type, eventData }: EventFormPro
 
                         {categories.length !== 0 ? (
                           categories.map((category) => (
-                            <SelectItem key={category._id} value={category.name}>
+                            <SelectItem key={category._id.toString()} value={category.name}>
                               {category.name}
                             </SelectItem>
                           ))

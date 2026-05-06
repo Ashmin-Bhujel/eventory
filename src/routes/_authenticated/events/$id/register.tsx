@@ -1,17 +1,21 @@
-import type { InitiatePaymentData } from "#/lib/validation/payment";
+import type { InitiatePaymentData } from "#/lib/zod/payment.schema";
 
+import ErrorComponent from "#/components/shared/error-component";
+import PendingComponent from "#/components/shared/pending-component";
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
-import { initiatePaymentMutationOptions } from "#/lib/mutations/payment";
-import { getEventByIdQueryOptions } from "#/lib/query/event";
+import { initiatePaymentMutationOptions } from "#/lib/mutations/payment.mutation";
+import { getEventByIdQueryOptions } from "#/lib/query/event.query";
 import { useUser } from "@clerk/tanstack-react-start";
 import { useMutation } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/events/$id/register")({
   component: RouteComponent,
-  pendingComponent: EventLoading,
-  errorComponent: EventError,
+  pendingComponent: () => <PendingComponent resourceName="event" />,
+  errorComponent: () => (
+    <ErrorComponent resourceName="event" fallbackRouteName="events" fallbackUrl="/events" />
+  ),
   loader: async ({ params, context }) => {
     try {
       const { id } = params;
@@ -30,40 +34,6 @@ export const Route = createFileRoute("/_authenticated/events/$id/register")({
     }
   },
 });
-
-function EventLoading() {
-  return (
-    <section className="container mx-auto">
-      <div className="px-4 py-10">
-        <div className="flex flex-col items-center justify-center gap-3">
-          <Spinner />
-          <p className="text-muted-foreground text-sm">Loading event...</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function EventError() {
-  return (
-    <section className="container mx-auto">
-      <div className="px-4 py-10">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <h1 className="font-heading text-2xl font-semibold">Unable to load event</h1>
-          <p className="text-muted-foreground text-sm">
-            Please try again or go back to the events list.
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => window.location.reload()}>Retry</Button>
-            <Button variant="outline" asChild>
-              <Link to="/events">Back to events</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function RouteComponent() {
   const { event } = Route.useLoaderData();
@@ -84,24 +54,36 @@ function RouteComponent() {
     );
   }
 
-  if (!event) {
+  const { userId } = buyer.publicMetadata;
+
+  if (!userId) {
     return (
       <section className="container mx-auto">
         <div className="px-4 py-6">
           <h1 className="font-heading scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-            No event found
+            User ID not found. Please contact support.
           </h1>
         </div>
       </section>
     );
   }
 
-  const { userId } = buyer.publicMetadata;
+  if (!event) {
+    return (
+      <section className="container mx-auto">
+        <div className="px-4 py-6">
+          <h1 className="font-heading scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
+            Event not found
+          </h1>
+        </div>
+      </section>
+    );
+  }
 
   const initiatePaymentData: InitiatePaymentData = {
     amount: event.price,
     purchase_order_name: `Registration for ${event.title}`,
-    event: event._id,
+    event: event._id.toString(),
     buyer: userId as string,
     customer_info: {
       email: buyer.emailAddresses[0].emailAddress,
@@ -110,7 +92,7 @@ function RouteComponent() {
     },
     product_details: [
       {
-        identity: event._id,
+        identity: event._id.toString(),
         name: event.title,
         quantity: 1,
         total_price: event.price,

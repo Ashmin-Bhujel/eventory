@@ -1,5 +1,9 @@
-import { createUserSchema, deleteUserSchema, updateUserSchema } from "#/lib/validation/user.ts";
-import { createUserFn, deleteUserFn, updateUserFn } from "#/server/functions/user.ts";
+import { createUserSchema, deleteUserSchema, updateUserSchema } from "#/lib/zod/user.schema";
+import {
+  createUserService,
+  deleteUserService,
+  updateUserService,
+} from "#/server/services/user.service";
 import { clerkClient } from "@clerk/tanstack-react-start/server";
 import { verifyWebhook } from "@clerk/tanstack-react-start/webhooks";
 import { createFileRoute } from "@tanstack/react-router";
@@ -31,15 +35,11 @@ export const Route = createFileRoute("/api/webhooks/clerk")({
               return new Response("Invalid user data", { status: 400 });
             }
 
-            const createdUser = await createUserFn({ data });
-
-            if (!createdUser) {
-              return new Response("Error creating user", { status: 500 });
-            }
+            const createdUser = await createUserService(data);
 
             await clerkClient().users.updateUserMetadata(id, {
               publicMetadata: {
-                userId: createdUser._id,
+                userId: createdUser._id.toString(),
               },
             });
           }
@@ -61,11 +61,7 @@ export const Route = createFileRoute("/api/webhooks/clerk")({
               return new Response("Invalid user data", { status: 400 });
             }
 
-            const updatedUser = await updateUserFn({ data });
-
-            if (!updatedUser) {
-              return new Response("Error updating user", { status: 500 });
-            }
+            await updateUserService(data);
           }
 
           // Handle user.deleted event
@@ -81,11 +77,7 @@ export const Route = createFileRoute("/api/webhooks/clerk")({
               return new Response("Invalid user data", { status: 400 });
             }
 
-            const deletedUser = await deleteUserFn({ data });
-
-            if (!deletedUser) {
-              return new Response("Error deleting user", { status: 500 });
-            }
+            await deleteUserService(data);
           }
 
           console.log("Received Clerk webhook event of type:", eventType);

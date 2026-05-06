@@ -1,10 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 import NotFound from "#/components/shared/not-found";
-import { ThemeProvider } from "#/components/theme-provider.tsx";
+import { ThemeProvider } from "#/components/theme-provider";
 import { Toaster } from "#/components/ui/sonner";
 import { TooltipProvider } from "#/components/ui/tooltip";
-import { authStateFn } from "#/server/functions/auth.ts";
+import { authStateQueryOptions } from "#/lib/query/auth.query";
 import { ClerkProvider } from "@clerk/tanstack-react-start";
 import { ImageKitProvider } from "@imagekit/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
@@ -22,9 +22,10 @@ type RouterContext = {
 };
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-  beforeLoad: async () => {
+  beforeLoad: async ({ context }) => {
     try {
-      const { isAuthenticated, userId } = await authStateFn();
+      const { isAuthenticated, userId } =
+        await context.queryClient.fetchQuery(authStateQueryOptions);
 
       return {
         isAuthenticated,

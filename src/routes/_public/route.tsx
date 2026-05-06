@@ -1,4 +1,4 @@
-import Header from "#/components/shared/header.tsx";
+import Header from "#/components/shared/header";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_public")({

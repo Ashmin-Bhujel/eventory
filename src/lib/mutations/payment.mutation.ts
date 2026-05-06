@@ -1,4 +1,4 @@
-import type { InitiatePaymentData, InitiatePaymentResponse } from "../validation/payment";
+import type { InitiatePaymentData, InitiatePaymentResponse } from "../zod/payment.schema";
 
 import { mutationOptions } from "@tanstack/react-query";
 

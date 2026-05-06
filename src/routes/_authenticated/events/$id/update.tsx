@@ -1,5 +1,5 @@
 import EventForm from "#/components/events/event-form";
-import { getEventByIdQueryOptions } from "#/lib/query/event";
+import { getEventByIdQueryOptions } from "#/lib/query/event.query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/events/$id/update")({
@@ -32,7 +32,7 @@ function RouteComponent() {
       <section className="container mx-auto">
         <div className="px-4 py-6">
           <h1 className="font-heading scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-            No event found
+            Event not found
           </h1>
         </div>
       </section>

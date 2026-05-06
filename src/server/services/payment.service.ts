@@ -2,10 +2,9 @@ import type {
   InitiatePaymentData,
   InitiatePaymentResponse,
   VerifyPaymentResponse,
-} from "#/lib/validation/payment";
+} from "#/lib/zod/payment.schema";
 
-import { connectDb } from "#/lib/database/db";
-import { createOrderFn, updateOrderPidxFn } from "./order";
+import { createOrderService, updateOrderPidxService } from "./order.service";
 
 const KHALTI_API_URL = process.env.KHALTI_API_URL;
 const KHALTI_LIVE_SECRET_KEY = process.env.KHALTI_LIVE_SECRET_KEY;
@@ -13,7 +12,7 @@ const KHALTI_RETURN_URL = process.env.KHALTI_RETURN_URL;
 const KHALTI_WEBSITE_URL = process.env.KHALTI_WEBSITE_URL;
 const KHALTI_PAYMENT_VERIFY_URL = process.env.KHALTI_PAYMENT_VERIFY_URL;
 
-export async function initiatePaymentFn(data: InitiatePaymentData) {
+export async function initiatePaymentService(data: InitiatePaymentData) {
   try {
     if (!KHALTI_API_URL || !KHALTI_LIVE_SECRET_KEY || !KHALTI_RETURN_URL || !KHALTI_WEBSITE_URL) {
       throw new Error("One or more required Khalti environment variables are not defined");
@@ -25,9 +24,7 @@ export async function initiatePaymentFn(data: InitiatePaymentData) {
       throw new Error("Amount mismatch with product details");
     }
 
-    await connectDb();
-
-    const createdOrder = await createOrderFn({
+    const createdOrder = await createOrderService({
       pidx: crypto.randomUUID(),
       totalAmount: calculatedAmount,
       status: data.amount === 0 ? "Completed" : "Pending",
@@ -35,14 +32,10 @@ export async function initiatePaymentFn(data: InitiatePaymentData) {
       buyer: data.buyer,
     });
 
-    if (!createdOrder) {
-      throw new Error("Failed to create order for payment");
-    }
-
     if (data.amount === 0) {
       return {
         pidx: createdOrder.pidx,
-        payment_url: "/events",
+        payment_url: "/profile",
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         expires_in: 86400,
       };
@@ -59,7 +52,7 @@ export async function initiatePaymentFn(data: InitiatePaymentData) {
         return_url: KHALTI_RETURN_URL,
         website_url: KHALTI_WEBSITE_URL,
         amount: data.amount * 100,
-        purchase_order_id: createdOrder._id,
+        purchase_order_id: createdOrder._id.toString(),
         purchase_order_name: data.purchase_order_name + " Ticket",
         customer_info: {
           name: data.customer_info.name,
@@ -100,7 +93,10 @@ export async function initiatePaymentFn(data: InitiatePaymentData) {
 
     const result: InitiatePaymentResponse = await response.json();
 
-    const updatedOrder = await updateOrderPidxFn({ pidx: result.pidx, orderId: createdOrder._id });
+    const updatedOrder = await updateOrderPidxService({
+      pidx: result.pidx,
+      orderId: createdOrder._id.toString(),
+    });
 
     if (!updatedOrder) {
       throw new Error("Failed to update order with pidx");
@@ -109,7 +105,7 @@ export async function initiatePaymentFn(data: InitiatePaymentData) {
     return result;
   } catch (error) {
     if (error instanceof Error) {
-      console.error("Error initiating payment:", error.message);
+      console.error("Error initiating payment:" + error.message);
     } else {
       console.error("Unknown error initiating payment");
     }
@@ -118,7 +114,7 @@ export async function initiatePaymentFn(data: InitiatePaymentData) {
   }
 }
 
-export async function verifyPaymentFn(pidx: string) {
+export async function verifyPaymentService(pidx: string) {
   try {
     if (!KHALTI_PAYMENT_VERIFY_URL || !KHALTI_LIVE_SECRET_KEY) {
       throw new Error("One or more required Khalti environment variables are not defined");
@@ -145,7 +141,7 @@ export async function verifyPaymentFn(pidx: string) {
     return result;
   } catch (error) {
     if (error instanceof Error) {
-      console.error("Error verifying payment:", error.message);
+      console.error("Error verifying payment:" + error.message);
     } else {
       console.error("Unknown error verifying payment");
     }

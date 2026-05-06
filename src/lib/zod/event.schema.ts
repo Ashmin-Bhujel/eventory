@@ -73,6 +73,18 @@ export const eventResponseSchema = z.object({
   updatedAt: z.date(),
 });
 
+export const getEventsByIdSchema = z.object({ id: z.string() });
+
+export const updateEventSchema = z.object({
+  eventId: z.string(),
+  formData: eventFormSchema,
+});
+
+export const deleteEventSchema = z.object({ id: z.string() });
+
 export type Event = z.infer<typeof eventSchema>;
 export type EventFormInput = z.infer<typeof eventFormSchema>;
 export type EventResponse = z.infer<typeof eventResponseSchema>;
+export type GetEventsByIdInput = z.infer<typeof getEventsByIdSchema>;
+export type UpdateEventInput = z.infer<typeof updateEventSchema>;
+export type DeleteEventInput = z.infer<typeof deleteEventSchema>;

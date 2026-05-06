@@ -1,10 +1,12 @@
+import ErrorComponent from "#/components/shared/error-component";
 import LocationMap from "#/components/shared/location-map";
+import PendingComponent from "#/components/shared/pending-component";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
-import { deleteEventMutationOptions } from "#/lib/mutations/event";
-import { getEventByIdQueryOptions } from "#/lib/query/event";
-import { getCoordinatesQueryOptions } from "#/lib/query/geocoding";
+import { deleteEventMutationOptions } from "#/lib/mutations/event.mutation";
+import { getEventByIdQueryOptions } from "#/lib/query/event.query";
+import { getCoordinatesQueryOptions } from "#/lib/query/geocoding.query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,10 +25,12 @@ import { format } from "date-fns";
 import { Calendar, LinkIcon, MapPin } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_public/events/$id/")({
+export const Route = createFileRoute("/_public/events/$id")({
   component: RouteComponent,
-  pendingComponent: EventLoading,
-  errorComponent: EventError,
+  pendingComponent: () => <PendingComponent resourceName="event" />,
+  errorComponent: () => (
+    <ErrorComponent resourceName="event" fallbackRouteName="events" fallbackUrl="/events" />
+  ),
   ssr: "data-only",
   loader: async ({ params, context }) => {
     try {
@@ -34,11 +38,13 @@ export const Route = createFileRoute("/_public/events/$id/")({
 
       const event = await context.queryClient.fetchQuery({ ...getEventByIdQueryOptions(id) });
 
-      const coordinates = event
-        ? await context.queryClient.fetchQuery({
-            ...getCoordinatesQueryOptions(event.location),
-          })
-        : null;
+      if (!event) {
+        throw new Error("Event not found");
+      }
+
+      const coordinates = await context.queryClient.fetchQuery({
+        ...getCoordinatesQueryOptions(event.location),
+      });
 
       return { event, coordinates };
     } catch (error) {
@@ -53,40 +59,6 @@ export const Route = createFileRoute("/_public/events/$id/")({
   },
 });
 
-function EventLoading() {
-  return (
-    <section className="container mx-auto">
-      <div className="px-4 py-10">
-        <div className="flex flex-col items-center justify-center gap-3">
-          <Spinner />
-          <p className="text-muted-foreground text-sm">Loading event...</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function EventError() {
-  return (
-    <section className="container mx-auto">
-      <div className="px-4 py-10">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <h1 className="font-heading text-2xl font-semibold">Unable to load event</h1>
-          <p className="text-muted-foreground text-sm">
-            Please try again or go back to the events list.
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => window.location.reload()}>Retry</Button>
-            <Button variant="outline" asChild>
-              <Link to="/events">Back to events</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function RouteComponent() {
   const { event, coordinates } = Route.useLoaderData();
   const { isAuthenticated, userId } = Route.useRouteContext();
@@ -96,8 +68,8 @@ function RouteComponent() {
   const navigate = useNavigate();
 
   const { mutate, isPending } = useMutation({
-    ...deleteEventMutationOptions(event ? event._id : ""),
-    onSuccess: ({ _id }) => {
+    ...deleteEventMutationOptions(event._id.toString()),
+    onSuccess: () => {
       toast.success("Event deleted successfully");
 
       queryClient.invalidateQueries({
@@ -105,7 +77,7 @@ function RouteComponent() {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["get", "event", _id],
+        queryKey: ["get", "event", event._id.toString()],
       });
 
       navigate({ to: "/events" });
@@ -114,18 +86,6 @@ function RouteComponent() {
       toast.error(error.message);
     },
   });
-
-  if (!event) {
-    return (
-      <section className="container mx-auto">
-        <div className="px-4 py-6">
-          <h1 className="font-heading scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-            No event found
-          </h1>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="container mx-auto">
@@ -164,12 +124,12 @@ function RouteComponent() {
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Link to="/events/$id/register" params={{ id: event._id }}>
+                <Link to="/events/$id/register" params={{ id: event._id.toString() }}>
                   <Button>{event.isFree ? "Register for free" : "Buy ticket"}</Button>
                 </Link>
 
                 {isAuthenticated && userId === event.organizer.clerkId && (
-                  <Link to="/events/$id/update" params={{ id: event._id }}>
+                  <Link to="/events/$id/update" params={{ id: event._id.toString() }}>
                     <Button variant={"secondary"} className="w-full" asChild>
                       <span>Edit Event Details</span>
                     </Button>

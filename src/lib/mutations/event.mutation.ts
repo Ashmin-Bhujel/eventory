@@ -1,6 +1,6 @@
-import type { EventFormInput } from "../validation/event";
+import type { EventFormInput } from "../zod/event.schema";
 
-import { createEventFn, deleteEventFn, updateEventFn } from "#/server/functions/event";
+import { createEventFn, deleteEventFn, updateEventFn } from "#/server/functions/event.function";
 import { mutationOptions } from "@tanstack/react-query";
 
 export const createEventMutationOptions = mutationOptions({

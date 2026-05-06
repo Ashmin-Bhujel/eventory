@@ -19,10 +19,10 @@ import { Route as ApiWebhooksClerkRouteImport } from './routes/api/webhooks/cler
 import { Route as ApiPaymentVerifyRouteImport } from './routes/api/payment/verify'
 import { Route as ApiPaymentInitiateRouteImport } from './routes/api/payment/initiate'
 import { Route as ApiAuthImagekitRouteImport } from './routes/api/auth/imagekit'
+import { Route as PublicEventsIdRouteImport } from './routes/_public/events/$id'
 import { Route as AuthenticatedEventsCreateRouteImport } from './routes/_authenticated/events/create'
 import { Route as AuthSignupSplatRouteImport } from './routes/_auth/signup.$'
 import { Route as AuthLoginSplatRouteImport } from './routes/_auth/login.$'
-import { Route as PublicEventsIdIndexRouteImport } from './routes/_public/events/$id/index'
 import { Route as AuthenticatedEventsIdUpdateRouteImport } from './routes/_authenticated/events/$id/update'
 import { Route as AuthenticatedEventsIdRegisterRouteImport } from './routes/_authenticated/events/$id/register'
 
@@ -73,6 +73,11 @@ const ApiAuthImagekitRoute = ApiAuthImagekitRouteImport.update({
   path: '/api/auth/imagekit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicEventsIdRoute = PublicEventsIdRouteImport.update({
+  id: '/events/$id',
+  path: '/events/$id',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const AuthenticatedEventsCreateRoute =
   AuthenticatedEventsCreateRouteImport.update({
     id: '/events/create',
@@ -88,11 +93,6 @@ const AuthLoginSplatRoute = AuthLoginSplatRouteImport.update({
   id: '/login/$',
   path: '/login/$',
   getParentRoute: () => AuthRouteRoute,
-} as any)
-const PublicEventsIdIndexRoute = PublicEventsIdIndexRouteImport.update({
-  id: '/events/$id/',
-  path: '/events/$id/',
-  getParentRoute: () => PublicRouteRoute,
 } as any)
 const AuthenticatedEventsIdUpdateRoute =
   AuthenticatedEventsIdUpdateRouteImport.update({
@@ -113,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/login/$': typeof AuthLoginSplatRoute
   '/signup/$': typeof AuthSignupSplatRoute
   '/events/create': typeof AuthenticatedEventsCreateRoute
+  '/events/$id': typeof PublicEventsIdRoute
   '/api/auth/imagekit': typeof ApiAuthImagekitRoute
   '/api/payment/initiate': typeof ApiPaymentInitiateRoute
   '/api/payment/verify': typeof ApiPaymentVerifyRoute
@@ -120,7 +121,6 @@ export interface FileRoutesByFullPath {
   '/events/': typeof PublicEventsIndexRoute
   '/events/$id/register': typeof AuthenticatedEventsIdRegisterRoute
   '/events/$id/update': typeof AuthenticatedEventsIdUpdateRoute
-  '/events/$id/': typeof PublicEventsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
@@ -128,6 +128,7 @@ export interface FileRoutesByTo {
   '/login/$': typeof AuthLoginSplatRoute
   '/signup/$': typeof AuthSignupSplatRoute
   '/events/create': typeof AuthenticatedEventsCreateRoute
+  '/events/$id': typeof PublicEventsIdRoute
   '/api/auth/imagekit': typeof ApiAuthImagekitRoute
   '/api/payment/initiate': typeof ApiPaymentInitiateRoute
   '/api/payment/verify': typeof ApiPaymentVerifyRoute
@@ -135,7 +136,6 @@ export interface FileRoutesByTo {
   '/events': typeof PublicEventsIndexRoute
   '/events/$id/register': typeof AuthenticatedEventsIdRegisterRoute
   '/events/$id/update': typeof AuthenticatedEventsIdUpdateRoute
-  '/events/$id': typeof PublicEventsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -147,6 +147,7 @@ export interface FileRoutesById {
   '/_auth/login/$': typeof AuthLoginSplatRoute
   '/_auth/signup/$': typeof AuthSignupSplatRoute
   '/_authenticated/events/create': typeof AuthenticatedEventsCreateRoute
+  '/_public/events/$id': typeof PublicEventsIdRoute
   '/api/auth/imagekit': typeof ApiAuthImagekitRoute
   '/api/payment/initiate': typeof ApiPaymentInitiateRoute
   '/api/payment/verify': typeof ApiPaymentVerifyRoute
@@ -154,7 +155,6 @@ export interface FileRoutesById {
   '/_public/events/': typeof PublicEventsIndexRoute
   '/_authenticated/events/$id/register': typeof AuthenticatedEventsIdRegisterRoute
   '/_authenticated/events/$id/update': typeof AuthenticatedEventsIdUpdateRoute
-  '/_public/events/$id/': typeof PublicEventsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -164,6 +164,7 @@ export interface FileRouteTypes {
     | '/login/$'
     | '/signup/$'
     | '/events/create'
+    | '/events/$id'
     | '/api/auth/imagekit'
     | '/api/payment/initiate'
     | '/api/payment/verify'
@@ -171,7 +172,6 @@ export interface FileRouteTypes {
     | '/events/'
     | '/events/$id/register'
     | '/events/$id/update'
-    | '/events/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -179,6 +179,7 @@ export interface FileRouteTypes {
     | '/login/$'
     | '/signup/$'
     | '/events/create'
+    | '/events/$id'
     | '/api/auth/imagekit'
     | '/api/payment/initiate'
     | '/api/payment/verify'
@@ -186,7 +187,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/events/$id/register'
     | '/events/$id/update'
-    | '/events/$id'
   id:
     | '__root__'
     | '/_auth'
@@ -197,6 +197,7 @@ export interface FileRouteTypes {
     | '/_auth/login/$'
     | '/_auth/signup/$'
     | '/_authenticated/events/create'
+    | '/_public/events/$id'
     | '/api/auth/imagekit'
     | '/api/payment/initiate'
     | '/api/payment/verify'
@@ -204,7 +205,6 @@ export interface FileRouteTypes {
     | '/_public/events/'
     | '/_authenticated/events/$id/register'
     | '/_authenticated/events/$id/update'
-    | '/_public/events/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -289,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthImagekitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_public/events/$id': {
+      id: '/_public/events/$id'
+      path: '/events/$id'
+      fullPath: '/events/$id'
+      preLoaderRoute: typeof PublicEventsIdRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_authenticated/events/create': {
       id: '/_authenticated/events/create'
       path: '/events/create'
@@ -309,13 +316,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/login/$'
       preLoaderRoute: typeof AuthLoginSplatRouteImport
       parentRoute: typeof AuthRouteRoute
-    }
-    '/_public/events/$id/': {
-      id: '/_public/events/$id/'
-      path: '/events/$id'
-      fullPath: '/events/$id/'
-      preLoaderRoute: typeof PublicEventsIdIndexRouteImport
-      parentRoute: typeof PublicRouteRoute
     }
     '/_authenticated/events/$id/update': {
       id: '/_authenticated/events/$id/update'
@@ -367,14 +367,14 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface PublicRouteRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
+  PublicEventsIdRoute: typeof PublicEventsIdRoute
   PublicEventsIndexRoute: typeof PublicEventsIndexRoute
-  PublicEventsIdIndexRoute: typeof PublicEventsIdIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicIndexRoute: PublicIndexRoute,
+  PublicEventsIdRoute: PublicEventsIdRoute,
   PublicEventsIndexRoute: PublicEventsIndexRoute,
-  PublicEventsIdIndexRoute: PublicEventsIdIndexRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(

@@ -1,7 +1,7 @@
-import type { CreateCategoryInput } from "#/lib/validation/category";
+import type { CreateCategoryInput } from "#/lib/zod/category.schema";
 
-import { createCategoryMutationOptions } from "#/lib/mutations/category";
-import { createCategorySchema } from "#/lib/validation/category";
+import { createCategoryMutationOptions } from "#/lib/mutations/category.mutation";
+import { createCategorySchema } from "#/lib/zod/category.schema";
 import { useForm } from "@tanstack/react-form-start";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
