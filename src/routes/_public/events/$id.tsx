@@ -132,7 +132,9 @@ function RouteComponent() {
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Link to="/events/$id/register" params={{ id: event._id.toString() }}>
-                  <Button>{event.isFree ? "Register for free" : "Buy ticket"}</Button>
+                  <Button className="w-full">
+                    {event.isFree ? "Register for free" : "Buy ticket"}
+                  </Button>
                 </Link>
 
                 {isAuthenticated && userId === event.organizer.clerkId && (

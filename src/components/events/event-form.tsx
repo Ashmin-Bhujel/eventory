@@ -135,7 +135,7 @@ export default function EventForm({ clerkUserId, type, eventData }: EventFormPro
         e.preventDefault();
         eventForm.handleSubmit();
       }}
-      className="mx-auto mt-6 max-w-sm"
+      className="mx-auto mt-6 mb-20 max-w-sm"
     >
       <FieldGroup>
         <FieldSet>
