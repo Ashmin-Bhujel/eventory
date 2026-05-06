@@ -68,6 +68,8 @@ function RouteComponent() {
   const { event, coordinates, relatedEvents } = Route.useLoaderData();
   const { isAuthenticated, userId } = Route.useRouteContext();
 
+  const relatedEventsExceptCurrent = relatedEvents.filter((e) => e._id !== event._id);
+
   const queryClient = useQueryClient();
 
   const navigate = useNavigate();
@@ -233,7 +235,11 @@ function RouteComponent() {
                 Related Events
               </h3>
 
-              <EventsCollection events={relatedEvents.filter((e) => e._id !== event._id)} />
+              {relatedEventsExceptCurrent.length > 0 ? (
+                <EventsCollection events={relatedEventsExceptCurrent} />
+              ) : (
+                <p className="text-muted-foreground mb-20">No related events found.</p>
+              )}
             </div>
           </div>
         </div>

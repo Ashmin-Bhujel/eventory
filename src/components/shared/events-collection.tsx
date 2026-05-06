@@ -42,7 +42,7 @@ export default function EventsCollection({ events }: { events: EventResponse[] }
           </CardHeader>
 
           <CardContent>
-            <div className="flex flex-col gap-2">
+            <div className="flex min-h-24 flex-col gap-2">
               <div className="space-x-2">
                 <Badge className="bg-green-300 text-green-800 dark:bg-green-800 dark:text-green-300">
                   {event.isFree ? "FREE" : `Nrs. ${event.price}`}
@@ -52,7 +52,6 @@ export default function EventsCollection({ events }: { events: EventResponse[] }
                   {format(new Date(event.startDate), "PPP")}
                 </Badge>
               </div>
-
               {event.description.length > 100
                 ? `${event.description.slice(0, 100)}...`
                 : event.description}
