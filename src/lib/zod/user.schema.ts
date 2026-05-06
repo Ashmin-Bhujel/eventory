@@ -33,7 +33,12 @@ export const deleteUserSchema = z.object({
   clerkId: z.string("Clerk ID is required"),
 });
 
+export const getUserByClerkIdSchema = z.object({
+  clerkId: z.string("Clerk ID is required"),
+});
+
 export type User = z.infer<typeof userSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type DeleteUserInput = z.infer<typeof deleteUserSchema>;
+export type GetUserByClerkIdInput = z.infer<typeof getUserByClerkIdSchema>;

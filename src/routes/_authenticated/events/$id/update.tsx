@@ -1,9 +1,15 @@
 import EventForm from "#/components/events/event-form";
+import ErrorComponent from "#/components/shared/error-component";
+import PendingComponent from "#/components/shared/pending-component";
 import { getEventByIdQueryOptions } from "#/lib/query/event.query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/events/$id/update")({
   component: RouteComponent,
+  pendingComponent: () => <PendingComponent resourceName="event" />,
+  errorComponent: () => (
+    <ErrorComponent resourceName="event" fallbackRouteName="events" fallbackUrl="/events" />
+  ),
   loader: async ({ params, context }) => {
     try {
       const { id } = params;

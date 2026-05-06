@@ -101,3 +101,37 @@ export async function deleteEventService(id: string, clerkId: string) {
     { returnDocument: "after" },
   ).lean();
 }
+
+export async function getUserEventsByUserClerkIdService(clerkId: string) {
+  await connectDb();
+
+  const organizer = await User.exists({ clerkId });
+
+  if (!organizer) {
+    console.error("Organizer not found");
+
+    return [];
+  }
+
+  return await Event.find({ organizer: organizer._id.toString() })
+    .populate({ path: "organizer", select: "firstName lastName clerkId" })
+    .populate({ path: "category", select: "name" })
+    .lean();
+}
+
+export async function getUserEventsByCategory(categoryName: string) {
+  await connectDb();
+
+  const category = await Category.exists({ name: categoryName });
+
+  if (!category) {
+    console.error("Category not found");
+
+    return [];
+  }
+
+  return await Event.find({ category: category._id.toString() })
+    .populate({ path: "organizer", select: "firstName lastName clerkId" })
+    .populate({ path: "category", select: "name" })
+    .lean();
+}

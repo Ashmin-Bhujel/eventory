@@ -35,7 +35,7 @@ export async function updateOrderStatusService(updateOrderStatusData: UpdateOrde
 export async function getUserOrdersService(userId: GetUserOrdersInput["userId"]) {
   await connectDb();
 
-  return await Order.find({ userId })
+  return await Order.find({ buyer: userId })
     .populate({
       path: "event",
       select: "title",

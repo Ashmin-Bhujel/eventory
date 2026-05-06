@@ -3,14 +3,18 @@ import type {
   Event,
   EventFormInput,
   EventResponse,
+  GetEventsByCategoryInput,
   GetEventsByIdInput,
+  GetEventsByUserClerkIdInput,
   UpdateEventInput,
 } from "#/lib/zod/event.schema";
 
 import {
   deleteEventSchema,
   eventFormSchema,
+  getEventsByCategorySchema,
   getEventsByIdSchema,
+  getEventsByUserClerkIdSchema,
   updateEventSchema,
 } from "#/lib/zod/event.schema";
 import { auth } from "@clerk/tanstack-react-start/server";
@@ -20,6 +24,8 @@ import {
   deleteEventService,
   getEventByIdService,
   getEventsService,
+  getUserEventsByCategory,
+  getUserEventsByUserClerkIdService,
   updateEventService,
 } from "../services/event.service";
 
@@ -160,5 +166,45 @@ export const deleteEventFn = createServerFn({
       }
 
       return null;
+    }
+  });
+
+export const getEventsByUserClerkIdFn = createServerFn({
+  method: "GET",
+})
+  .inputValidator((data: GetEventsByUserClerkIdInput) => getEventsByUserClerkIdSchema.parse(data))
+  .handler(async ({ data }) => {
+    try {
+      const events = await getUserEventsByUserClerkIdService(data.clerkId);
+
+      return JSON.parse(JSON.stringify(events)) as EventResponse[];
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`Error fetching events: ${error.message}`);
+      } else {
+        console.error("Unknown error fetching events");
+      }
+
+      return [];
+    }
+  });
+
+export const getEventsByCategoryFn = createServerFn({
+  method: "GET",
+})
+  .inputValidator((data: GetEventsByCategoryInput) => getEventsByCategorySchema.parse(data))
+  .handler(async ({ data }) => {
+    try {
+      const events = await getUserEventsByCategory(data.category);
+
+      return JSON.parse(JSON.stringify(events)) as EventResponse[];
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`Error fetching events: ${error.message}`);
+      } else {
+        console.error("Unknown error fetching events");
+      }
+
+      return [];
     }
   });

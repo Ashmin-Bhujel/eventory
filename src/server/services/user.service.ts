@@ -90,3 +90,9 @@ export async function deleteUserService(deleteUserData: DeleteUserInput) {
     throw error;
   }
 }
+
+export async function getUserByClerkIdService(clerkId: string) {
+  await connectDb();
+
+  return await User.findOne({ clerkId }).lean();
+}

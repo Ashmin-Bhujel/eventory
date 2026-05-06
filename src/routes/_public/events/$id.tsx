@@ -1,11 +1,12 @@
 import ErrorComponent from "#/components/shared/error-component";
+import EventsCollection from "#/components/shared/events-collection";
 import LocationMap from "#/components/shared/location-map";
 import PendingComponent from "#/components/shared/pending-component";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Spinner } from "#/components/ui/spinner";
 import { deleteEventMutationOptions } from "#/lib/mutations/event.mutation";
-import { getEventByIdQueryOptions } from "#/lib/query/event.query";
+import { getEventByIdQueryOptions, getEventsByCategoryQueryOptions } from "#/lib/query/event.query";
 import { getCoordinatesQueryOptions } from "#/lib/query/geocoding.query";
 import {
   AlertDialog,
@@ -42,11 +43,15 @@ export const Route = createFileRoute("/_public/events/$id")({
         throw new Error("Event not found");
       }
 
+      const relatedEvents = await context.queryClient.fetchQuery({
+        ...getEventsByCategoryQueryOptions(event.category.name),
+      });
+
       const coordinates = await context.queryClient.fetchQuery({
         ...getCoordinatesQueryOptions(event.location),
       });
 
-      return { event, coordinates };
+      return { event, coordinates, relatedEvents };
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error fetching event or coordinates:", error.message);
@@ -60,7 +65,7 @@ export const Route = createFileRoute("/_public/events/$id")({
 });
 
 function RouteComponent() {
-  const { event, coordinates } = Route.useLoaderData();
+  const { event, coordinates, relatedEvents } = Route.useLoaderData();
   const { isAuthenticated, userId } = Route.useRouteContext();
 
   const queryClient = useQueryClient();
@@ -210,7 +215,7 @@ function RouteComponent() {
             </div>
 
             {coordinates && (
-              <div className="flex flex-col gap-4 pb-16">
+              <div className="flex flex-col gap-4">
                 <h3 className="font-heading scroll-m-20 text-2xl font-semibold tracking-tight">
                   Location
                 </h3>
@@ -222,6 +227,14 @@ function RouteComponent() {
                 />
               </div>
             )}
+
+            <div className="flex flex-col gap-6">
+              <h3 className="font-heading scroll-m-20 text-2xl font-semibold tracking-tight">
+                Related Events
+              </h3>
+
+              <EventsCollection events={relatedEvents.filter((e) => e._id !== event._id)} />
+            </div>
           </div>
         </div>
       </div>

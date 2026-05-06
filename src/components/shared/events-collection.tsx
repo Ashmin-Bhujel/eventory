@@ -18,7 +18,7 @@ import { Button } from "../ui/button";
 
 export default function EventsCollection({ events }: { events: EventResponse[] }) {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="mb-20 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {events.map((event) => (
         <Card key={event._id.toString()} className="relative mx-auto w-full max-w-sm pt-0">
           {event.imageUrl ? (
