@@ -42,7 +42,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                 className={
                   order.status === "Completed"
                     ? "bg-green-300 text-green-800 dark:bg-green-800 dark:text-green-300"
-                    : order.status === "Pending" || order.status === "User canceled"
+                    : order.status === "Pending"
                       ? "bg-amber-300 text-amber-800 dark:bg-amber-800 dark:text-amber-300"
                       : "bg-red-300 text-red-800 dark:bg-red-800 dark:text-red-300"
                 }

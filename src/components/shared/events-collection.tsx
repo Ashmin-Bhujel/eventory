@@ -31,7 +31,7 @@ export default function EventsCollection({ events }: { events: EventResponse[] }
             <Skeleton className="aspect-video w-full rounded-none" />
           )}
 
-          <CardHeader>
+          <CardHeader className="lg:min-h-18 xl:min-h-auto">
             <CardTitle>{event.title}</CardTitle>
 
             <CardAction>
